@@ -1,28 +1,22 @@
-import api from './api';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api/auth';
 
 const login = async (username, password) => {
-    // 1. Creamos la cabecera de autenticación Basic (Base64)
-    // btoa() es una función nativa de JS para codificar a Base64
-    const token = 'Basic ' + btoa(username + ':' + password);
+    // const token = 'Basic ' + btoa(username + ':' + password);
 
     try {
-        // 2. Hacemos una petición de prueba a un endpoint protegido
-        // Usamos /usuarios para probar (o cualquier endpoint que requiera auth)
-        const response = await api.get('/usuarios', {
-            headers: { 'Authorization': token }
+        const response = await axios.post(`${API_URL}/login`, {
+            username,
+            password,
+            // authHeader: token,
         });
 
-        // 3. Si la respuesta es exitosa (200 OK), guardamos los datos
-        // en backend endpoint /me que devuelva los datos del usuario.
-        const userData = {
-            username: username,
-            authHeader: token,
-            // rol: 'SUPERVISOR' (Esto lo deberíamos obtener del backend más adelante)
-        };
-
-        localStorage.setItem('user', JSON.stringify(userData));
-        return userData;
-
+        if(response.data){
+            // guardo el user en localStorage para mantener la sesion
+            localStorage.setItem('user', JSON.stringify(response.data));
+        }
+        return response.data;
     } catch (error) {
         console.error("Error de login", error);
         throw error;
