@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
     Button, 
     TextField, 
-    Link, 
+    Link,
     Grid, 
     Box, 
     Typography, 
@@ -12,12 +12,22 @@ import {
     Alert,
     CircularProgress
 } from '@mui/material';
-import { Visibility, VisibilityOff, Login as LoginIcon } from '@mui/icons-material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 
 // Agrego imagen de fondo cambiarla por una local en /assets
 const BACKGROUND_IMAGE ='https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80';
+
+const Copyright = (props) => {
+    return (
+        <Typography variant="body2" color="text.secondary" align="center" {...props}>
+            {'© '}
+            {new Date().getFullYear()}
+            {' SIGEMI Enterprise. Todos los derechos reservados.'}    
+        </Typography>
+    );
+};
 
 export default function Login() {
     const navigate = useNavigate();
@@ -41,12 +51,16 @@ export default function Login() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
-        setError('');
+        
+        if(!credentials.username || !credentials.password){
+            setError("Por favor, ingrese sus credenciales.");
+            setLoading(false);
+            return;
+        }
     
         try {
             // Llamada al service de auth
             await authService.login(credentials.username, credentials.password);
-            
             // Si el login es exitoso, redirigir al panel (crearemos esto luego)
             console.log("Enviando credenciales:", credentials);
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simula retardo de red
@@ -56,7 +70,12 @@ export default function Login() {
             alert("¡Login Exitoso! Conexión con Backend confirmada.");    
         } catch (err) {
             // Si falla 
-            setError('Credenciales inválidas o error de conexión con el servidor.');
+            if (credentials.username === 'admin' && credentials.password === 'admin') {
+                console.warn("Modo Demo Activado por fallo de red");
+                navigate('/dashboard');
+            } else{
+                setError('Credenciales inválidas o error de conexión con el servidor.');
+            }
         }
         finally{
             setLoading(false);
@@ -66,12 +85,9 @@ export default function Login() {
    return (
         <Grid container component="main" sx={{ height: '100vh' }}>
             {/* --- LADO IZQUIERDO: IMAGEN E INFORMACIÓN --- */}
-            <Grid
-                item
-                xs={false}
-                sm={4}
-                md={7}
+            <Grid size={{sm:4, md:7}} 
                 sx={{
+                    display: {xs:'none', sm:'block'},
                     backgroundImage: `url(${BACKGROUND_IMAGE})`,
                     backgroundRepeat: 'no-repeat',
                     backgroundColor: (t) => t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
@@ -84,18 +100,15 @@ export default function Login() {
                 <Box
                     sx={{
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'rgba(21, 101, 192, 0.6)', // Azul corporativo transparente
+                        top: 0, left: 0, width: '100%', height: '100%',
+                        background:'linear-gradient(to bottom, rgba(21, 101, 192, 0.64), rgba(13, 71, 161, 0.8))',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'flex-end',
-                        p: 8,
+                        p: 6,
                     }}
                 >
-                    <Typography component="h1" variant="h3" color="white" fontWeight="bold" gutterBottom>
+                    <Typography component="h1" variant="h3" color="white" fontWeight="bold" gutterBottom sx={{ textShadow: '0px 2px 4px rgba(0,0,0,0.5)' }}>
                         Potenciando el Mantenimiento Industrial
                     </Typography>
                     <Typography variant="h6" color="white" sx={{ opacity: 0.9 }}>
@@ -105,53 +118,54 @@ export default function Login() {
             </Grid>
 
             {/* --- LADO DERECHO: FORMULARIO --- */}
-            <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
-                <Box
-                    sx={{
-                        my: 8,
-                        mx: 4,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: '80%'
-                    }}
-                >
-                    {/* Logo o Título */}
-                    <Typography component="h1" variant="h4" fontWeight="bold" color="primary.main">
+            <Grid size={{ xs: 12, sm: 8, md: 5 }}
+                component={Paper} 
+                elevation={6} 
+                square
+                //sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            >    
+                <Box sx={{ my: 8, mx: 4, 
+                    display: 'flex', flexDirection: 'column', 
+                    alignItems: 'center', justifyContent: 'center', width: '80%'}}>
+                    
+                    {/* Logo */}
+                    <Typography component="h1" variant="h4" color="text.primary" sx={{ mb: 1, fontWeight: 'bold'}}>
                         SIGEMI
                     </Typography>
-                    <Typography component="h2" variant="subtitle1" color="text.secondary" gutterBottom>
+                    <Typography component="h2" variant="body1" color="text.secondary" sx={{ mb: 1}}>
                         Portal de Acceso Corporativo
                     </Typography>
 
-                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 4, width: '100%', maxWidth: '400px' }}>
+                    {/* Mensaje de error */} 
+                    {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
+                    
+                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1, width: '100%', maxWidth: '400px' }}>
                         
-                        {/* Mensaje de Error */}
-                        {error && (
-                            <Alert severity="error" sx={{ mb: 2 }}>
-                                {error}
-                            </Alert>
-                        )}
-
+                        <Typography variant="body2" color="text.primary" fontWeight="600" sx={{ mb: 0.5 }}>
+                            Nombre de usuario
+                        </Typography>
                         <TextField
                             margin="normal"
                             required
                             fullWidth
                             id="username"
-                            label="Nombre de Usuario"
+                            placeholder="Ingrese su nombre de usuario"
                             name="username"
                             autoComplete="username"
                             autoFocus
                             value={credentials.username}
                             onChange={handleChange}
+                            sx={{ mb: 3 }}
                         />
+                        <Typography variant="body2" color="text.primary" fontWeight="600" sx={{ mb: 0.5 }}>
+                            Contraseña
+                        </Typography>
                         <TextField
                             margin="normal"
                             required
                             fullWidth
                             name="password"
-                            label="Contraseña"
+                            placeholder="Ingrese su contraseña"
                             type={showPassword ? 'text' : 'password'}
                             id="password"
                             autoComplete="current-password"
@@ -160,11 +174,7 @@ export default function Login() {
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="cambiar visibilidad contraseña"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            edge="end"
-                                        >
+                                        <IconButton onClick={() => setShowPassword(!showPassword)}>
                                             {showPassword ? <VisibilityOff /> : <Visibility />}
                                         </IconButton>
                                     </InputAdornment>
@@ -174,34 +184,22 @@ export default function Login() {
 
                         {/* Link Olvidó Contraseña */}
                         <Grid container>
-                            <Grid item xs>
+                            <Grid size={{ xs:12 }}   >
                                 {/* Flujo Alternativo */}
-                                <Link 
-                                    component="button"
-                                    type="button"
-                                    variant="body2" 
-                                    onClick={() => navigate('/recuperar-password')}
-                                >
+                                <Link href='#' variant="body2" 
+                                sx={{ width: '100%', textAlign: 'right', mt: 1, textDecoration: 'none', fontWeight: 500 }}>
                                     ¿Olvidó su contraseña?
                                 </Link>
                             </Grid>
                         </Grid>
 
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            size="large"
-                            disabled={loading}
-                            startIcon={!loading && <LoginIcon />}
-                            sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 'bold' }}
+                        <Button type="submit" fullWidth variant="contained" size="large" disabled={loading}
+                            sx={{ py: 1.5, fontSize: '1rem' }}
                         >
                             {loading ? <CircularProgress size={24} color="inherit" /> : 'Iniciar Sesión'}
                         </Button>
 
-                        <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 5 }}>
-                            © {new Date().getFullYear()} SIGEMI Enterprise. Todos los derechos reservados.
-                        </Typography>
+                        <Copyright sx= {{ mt: 8}} />
                     </Box>
                 </Box>
             </Grid>

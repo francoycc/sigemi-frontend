@@ -1,25 +1,24 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api/auth';
+// Apunta a tu servidor Spring Boot real
+const API_URL = 'http://localhost:8080/api/auth';
 
 const login = async (username, password) => {
-    // const token = 'Basic ' + btoa(username + ':' + password);
-
     try {
+        // CONEXIÓN REAL: Envía los datos al Backend
         const response = await axios.post(`${API_URL}/login`, {
             username,
-            password,
-            // authHeader: token,
+            password
         });
-
-        if(response.data){
-            // guardo el user en localStorage para mantener la sesion
+        
+        // Si el backend responde OK (200), guardamos al usuario
+        if (response.data) {
             localStorage.setItem('user', JSON.stringify(response.data));
         }
         return response.data;
     } catch (error) {
-        console.error("Error de login", error);
-        throw error;
+        console.error("Error de conexión o credenciales inválidas", error);
+        throw error; // Esto disparará el mensaje de error rojo en el Login
     }
 };
 
