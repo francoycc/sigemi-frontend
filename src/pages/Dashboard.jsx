@@ -1,13 +1,14 @@
 import React from 'react';
+import Grid from '@mui/material/Grid2'; 
 import { 
-    Grid, Paper, Typography, Box, Chip, Table, TableBody, 
-    TableCell, TableContainer, TableHead, TableRow, Avatar 
+    Paper, Typography, Box, Chip, Table, TableBody, 
+    TableCell, TableContainer, TableHead, TableRow, LinearProgress, Avatar 
 } from '@mui/material';
 import { 
-    WarningAmber, CheckCircleOutline, BuildCircle, TrendingUp 
+    WarningAmber, CheckCircleOutline, BuildCircle, AccessTime 
 } from '@mui/icons-material';
 
-// --- COMPONENTE DE TARJETA KPI (Estilo Industrial) ---
+// --- COMPONENTE DE TARJETA KPI INICIO---
 const StatCard = ({ title, value, subtitle, icon, color, bgColor }) => (
     <Paper
         elevation={0}
@@ -35,7 +36,8 @@ const StatCard = ({ title, value, subtitle, icon, color, bgColor }) => (
                 {value}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <TrendingUp fontSize="small" color="success" /> {subtitle}
+                {/* Icono pequeño en el subtítulo para dar contexto */}
+                <AccessTime fontSize="small" sx={{ color: color, opacity: 0.8 }} /> {subtitle}
             </Typography>
         </Box>
         <Avatar
@@ -53,11 +55,12 @@ const StatCard = ({ title, value, subtitle, icon, color, bgColor }) => (
     </Paper>
 );
 
-// Datos simulados para la tabla
-const RECENT_ORDERS = [
-    { id: 'WO-001', equipo: 'Torno CNC Haas', prioridad: 'Alta', estado: 'Abierta', fecha: '2023-10-25' },
-    { id: 'WO-002', equipo: 'Compresor Atlas', prioridad: 'Media', estado: 'En Proceso', fecha: '2023-10-24' },
-    { id: 'WO-003', equipo: 'Bomba Hidráulica', prioridad: 'Baja', estado: 'Finalizada', fecha: '2023-10-23' },
+// Datos simulados
+const ORDERS = [
+    { id: 'WO-2023-001', equipo: 'Torno CNC Mazak', tipo: 'Correctivo', estado: 'Abierta', prioridad: 'Alta', progreso: 10 },
+    { id: 'WO-2023-002', equipo: 'Compresor Aire #2', tipo: 'Preventivo', estado: 'En Proceso', prioridad: 'Media', progreso: 45 },
+    { id: 'WO-2023-003', equipo: 'Cinta Transportadora', tipo: 'Predictivo', estado: 'Finalizada', prioridad: 'Baja', progreso: 100 },
+    { id: 'WO-2023-004', equipo: 'Bomba Hidráulica P-10', tipo: 'Correctivo', estado: 'Pendiente', prioridad: 'Crítica', progreso: 0 },
 ];
 
 export default function Dashboard() {
@@ -65,104 +68,126 @@ export default function Dashboard() {
         <Box>
             <Box sx={{ mb: 4 }}>
                 <Typography variant="h4" fontWeight="bold" gutterBottom>
-                    Bienvenido, Supervisor
+                    Panel de Control
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    Aquí tienes el resumen del estado de planta hoy.
+                    Visión general del estado de mantenimiento de planta.
                 </Typography>
             </Box>
 
             {/* --- SECCIÓN KPI --- */}
+            {/* Grid2 usa la prop 'size' en lugar de xs, sm, md directos */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 
-                {/* KPI 1: Críticos */}
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <StatCard 
                         title="Alertas Críticas" 
                         value="3" 
-                        subtitle="2 nuevas hoy"
-                        icon={<WarningAmber fontSize="large" />} 
-                        color="#d32f2f" // Rojo fuerte
-                        bgColor="#ffebee" // Rojo muy suave
+                        subtitle="REQUIEREN ATENCIÓN"
+                        icon={<WarningAmber fontSize="medium" />} 
+                        color="#D32F2F" // Rojo Error
+                        bgColor="#FFEBEE"
                     />
                 </Grid>
 
-                {/* KPI 2: Operativos */}
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <StatCard 
                         title="Equipos Operativos" 
                         value="94%" 
-                        subtitle="+1.2% vs semana anterior"
-                        icon={<CheckCircleOutline fontSize="large" />} 
-                        color="#2e7d32" // Verde fuerte
-                        bgColor="#e8f5e9" // Verde suave
+                        subtitle="OBJETIVO: 96%"
+                        icon={<CheckCircleOutline fontSize="medium" />} 
+                        color="#2E7D32" // Verde Success
+                        bgColor="#E8F5E9"
                     />
                 </Grid>
 
-                {/* KPI 3: Órdenes */}
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <StatCard 
                         title="Órdenes Activas" 
                         value="12" 
-                        subtitle="5 asignadas a ti"
-                        icon={<BuildCircle fontSize="large" />} 
-                        color="#1565C0" // Azul corporativo
-                        bgColor="#e3f2fd" // Azul suave
+                        subtitle="5 ASIGNADAS A TI"
+                        icon={<BuildCircle fontSize="medium" />} 
+                        color="#1565C0" // Azul Primary
+                        bgColor="#E3F2FD"
                     />
                 </Grid>
 
-                {/* KPI 4: Preventivos */}
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <StatCard 
-                        title="Preventivos (Mes)" 
-                        value="28" 
-                        subtitle="8 pendientes"
-                        icon={<TrendingUp fontSize="large" />} 
-                        color="#ed6c02" // Naranja
-                        bgColor="#fff3e0" // Naranja suave
+                        title="Tiempo Promedio Rep." 
+                        value="4.2h" 
+                        subtitle="-15% VS MES PASADO"
+                        icon={<AccessTime fontSize="medium" />} 
+                        color="#ED6C02" // Naranja Warning
+                        bgColor="#FFF3E0"
                     />
                 </Grid>
             </Grid>
 
-            {/* --- SECCIÓN TABLA --- */}
+            {/* --- SECCIÓN TABLA DETALLADA --- */}
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-                Órdenes Recientes
+                Órdenes de Trabajo Recientes
             </Typography>
             <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                    <TableHead sx={{ bgcolor: '#F4F6F8' }}>
+                    <TableHead sx={{ bgcolor: '#F5F5F5' }}>
                         <TableRow>
-                            <TableCell fontWeight="bold">Código</TableCell>
-                            <TableCell>Equipo</TableCell>
-                            <TableCell>Prioridad</TableCell>
-                            <TableCell>Estado</TableCell>
-                            <TableCell align="right">Fecha</TableCell>
+                            <TableCell fontWeight="bold">CÓDIGO</TableCell>
+                            <TableCell fontWeight="bold">EQUIPO</TableCell>
+                            <TableCell fontWeight="bold">TIPO</TableCell>
+                            <TableCell fontWeight="bold">PRIORIDAD</TableCell>
+                            <TableCell fontWeight="bold">ESTADO</TableCell>
+                            <TableCell fontWeight="bold" width={150}>PROGRESO</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {RECENT_ORDERS.map((row) => (
-                            <TableRow key={row.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                <TableCell component="th" scope="row" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                        {ORDERS.map((row) => (
+                            <TableRow key={row.id} hover>
+                                <TableCell sx={{ fontFamily: 'monospace', fontWeight: 600, color: 'primary.main' }}>
                                     {row.id}
                                 </TableCell>
                                 <TableCell>{row.equipo}</TableCell>
+                                <TableCell>{row.tipo}</TableCell>
                                 <TableCell>
                                     <Chip 
                                         label={row.prioridad} 
                                         size="small" 
-                                        color={row.prioridad === 'Alta' ? 'error' : row.prioridad === 'Media' ? 'warning' : 'success'} 
-                                        variant="outlined"
+                                        sx={{ 
+                                            fontWeight: 600,
+                                            borderRadius: 1,
+                                            bgcolor: row.prioridad === 'Crítica' ? '#FFEBEE' : row.prioridad === 'Alta' ? '#FFF3E0' : '#E8F5E9',
+                                            color: row.prioridad === 'Crítica' ? '#D32F2F' : row.prioridad === 'Alta' ? '#ED6C02' : '#2E7D32',
+                                            border: '1px solid',
+                                            borderColor: 'currentColor'
+                                        }} 
                                     />
                                 </TableCell>
                                 <TableCell>
-                                    <Chip 
-                                        label={row.estado} 
-                                        size="small" 
-                                        color={row.estado === 'Abierta' ? 'primary' : 'default'} 
-                                        sx={{ fontWeight: 500 }}
-                                    />
+                                    <Typography variant="body2" fontWeight="500">
+                                        {row.estado}
+                                    </Typography>
                                 </TableCell>
-                                <TableCell align="right">{row.fecha}</TableCell>
+                                <TableCell>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <Box sx={{ width: '100%', mr: 1 }}>
+                                            <LinearProgress 
+                                                variant="determinate" 
+                                                value={row.progreso} 
+                                                sx={{ 
+                                                    height: 6, 
+                                                    borderRadius: 3,
+                                                    bgcolor: '#e0e0e0',
+                                                    '& .MuiLinearProgress-bar': {
+                                                        bgcolor: row.progreso === 100 ? 'success.main' : 'primary.main'
+                                                    }
+                                                }} 
+                                            />
+                                        </Box>
+                                        <Box sx={{ minWidth: 35 }}>
+                                            <Typography variant="caption" color="text.secondary">{`${row.progreso}%`}</Typography>
+                                        </Box>
+                                    </Box>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

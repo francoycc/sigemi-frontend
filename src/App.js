@@ -26,7 +26,7 @@ function App() {
              <Route path="/dashboard" element={<Dashboard />} />
              
              {/* Rutas placeholder para evitar errores 404 si clickeas el menú */}
-             <Route path="/equipos" element={<h2>Gestión de Equipos</h2>} />
+             <Route path="/equipos" element={<h2>Gestión de Activos</h2>} />
              <Route path="/ordenes" element={<h2>Órdenes de Trabajo</h2>} />
              <Route path="/tareas" element={<h2>Tareas</h2>} />
              <Route path="/reportes" element={<h2>Reportes</h2>} />

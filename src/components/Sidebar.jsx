@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { 
     Drawer, List, ListItem, ListItemButton, ListItemIcon, 
     ListItemText, Toolbar, Divider, Box, Typography, Avatar 
 } from '@mui/material';
 import { 
     Dashboard as DashboardIcon,
-    Inventory as EquipmentIcon, 
+    PrecisionManufacturing as EquipmentIcon, 
     Assignment as OrdersIcon,   
     Build as TaskIcon,          
     BarChart as ReportIcon,
@@ -13,12 +13,11 @@ import {
     Settings as SettingsIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-
-const DRAWER_WIDTH = 260;
+import { DRAWER_WIDTH } from '../config/constants';
 
 const MENU_ITEMS = [
     { text: 'Panel de Control', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Inventario de Equipos', icon: <EquipmentIcon />, path: '/equipos' },
+    { text: 'Inventario de Activos', icon: <EquipmentIcon />, path: '/equipos' },
     { text: 'Órdenes de Trabajo', icon: <OrdersIcon />, path: '/ordenes' },
     { text: 'Tareas Técnicas', icon: <TaskIcon />, path: '/tareas' },
     { text: 'Reportes y KPI', icon: <ReportIcon />, path: '/reportes' },
@@ -28,32 +27,26 @@ export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Recuperamos el usuario (simulado)
-    const user = JSON.parse(localStorage.getItem('user')) || { nombre: 'Operador', rol: 'Técnico' };
+    //const user = JSON.parse(localStorage.getItem('user')) || { nombre: 'Operador', rol: 'Técnico' };
+    const user = useMemo(() => {
+        try {
+            const storedUser = localStorage.getItem('user');
+            return storedUser ? JSON.parse(storedUser) : { nombre: 'Invitado', rol: 'Sin Acceso'};
+        } catch (e) {
+            console.error("Error al leer usuario:", e);
+            return { nombre: 'Error', rol: 'Limpiar Cache' };
+        }   
+    }, []);
 
-    return (
-        <Drawer
-            variant="permanent"
-            sx={{
-                width: DRAWER_WIDTH,
-                flexShrink: 0,
-                [`& .MuiDrawer-paper`]: { 
-                    width: DRAWER_WIDTH, 
-                    boxSizing: 'border-box',
-                    backgroundColor: '#FFFFFF',
-                    borderRight: '1px solid #E0E0E0',
-                },
-            }}
-        >
-            {/* Header del Sidebar */}
+   const drawerContent = (
+        <>
             <Toolbar sx={{ px: 3 }}>
                 <Typography variant="h6" color="primary.main" sx={{ fontWeight: 800, letterSpacing: 1 }}>
-                    SIGEMI <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.7em', fontWeight: 400 }}>ENT</Box>
+                    SIGEMI <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.7em', fontWeight: 400 }}>App</Box>
                 </Typography>
             </Toolbar>
             <Divider />
             
-            {/* Lista de Menú */}
             <Box sx={{ overflow: 'auto', flexGrow: 1, py: 2 }}>
                 <List>
                     {MENU_ITEMS.map((item) => {
@@ -62,7 +55,11 @@ export default function Sidebar() {
                             <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
                                 <ListItemButton 
                                     selected={active}
-                                    onClick={() => navigate(item.path)}
+                                    onClick={() => {
+                                        navigate(item.path);
+                                        // Si estamos en móvil, cerramos el menú al hacer click
+                                        if(mobileOpen && handleDrawerToggle) handleDrawerToggle(); 
+                                    }}
                                     sx={{
                                         mx: 1.5,
                                         borderRadius: 1.5,
@@ -77,18 +74,12 @@ export default function Sidebar() {
                                         }
                                     }}
                                 >
-                                    <ListItemIcon sx={{ 
-                                        color: active ? 'primary.main' : 'text.secondary',
-                                        minWidth: 40 
-                                    }}>
+                                    <ListItemIcon sx={{ color: active ? 'primary.main' : 'text.secondary', minWidth: 40 }}>
                                         {item.icon}
                                     </ListItemIcon>
                                     <ListItemText 
                                         primary={item.text} 
-                                        primaryTypographyProps={{ 
-                                            fontSize: '0.9rem', 
-                                            fontWeight: active ? 700 : 500 
-                                        }} 
+                                        primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: active ? 700 : 500 }} 
                                     />
                                 </ListItemButton>
                             </ListItem>
@@ -97,7 +88,6 @@ export default function Sidebar() {
                 </List>
             </Box>
 
-            {/* Footer de Usuario */}
             <Divider />
             <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, bgcolor: '#FAFAFA' }}>
                 <Avatar sx={{ bgcolor: 'secondary.main', width: 40, height: 40 }}>
@@ -113,6 +103,43 @@ export default function Sidebar() {
                 </Box>
                 <SettingsIcon fontSize="small" sx={{ color: 'text.disabled', ml: 'auto', cursor: 'pointer' }} />
             </Box>
-        </Drawer>
+        </>
+    );
+
+    const container = window !== undefined ? () => window().document.body : undefined;
+
+    return (
+        <Box component="nav" sx={{ width: { sm: DRAWER_WIDTH }, flexShrink: { sm: 0 } }}>
+            {/* DRAWER CELULAR (TEMPORAL) */}
+            <Drawer
+                container={container}
+                variant="temporary"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                ModalProps={{ keepMounted: true }} 
+                sx={{
+                    display: { xs: 'block', sm: 'none' },
+                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
+                }}
+            >
+                {drawerContent}
+            </Drawer>
+
+            {/* DRAWER PC (PERMANENTE) */}
+            <Drawer
+                variant="permanent"
+                sx={{
+                    display: { xs: 'none', sm: 'block' },
+                    '& .MuiDrawer-paper': { 
+                        boxSizing: 'border-box', 
+                        width: DRAWER_WIDTH,
+                        borderRight: '1px solid rgba(0,0,0,0.08)'
+                    },
+                }}
+                open
+            >
+                {drawerContent}
+            </Drawer>
+        </Box>
     );
 }
