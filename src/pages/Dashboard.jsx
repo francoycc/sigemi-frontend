@@ -1,14 +1,13 @@
 import React from 'react';
-import Grid from '@mui/material/Grid2'; 
 import { 
-    Paper, Typography, Box, Chip, Table, TableBody, 
+    Grid, Paper, Typography, Box, Chip, Table, TableBody, 
     TableCell, TableContainer, TableHead, TableRow, LinearProgress, Avatar 
 } from '@mui/material';
 import { 
     WarningAmber, CheckCircleOutline, BuildCircle, AccessTime 
 } from '@mui/icons-material';
 
-// --- COMPONENTE DE TARJETA KPI INICIO---
+// --- COMPONENTE DE TARJETA KPI ---
 const StatCard = ({ title, value, subtitle, icon, color, bgColor }) => (
     <Paper
         elevation={0}
@@ -36,7 +35,6 @@ const StatCard = ({ title, value, subtitle, icon, color, bgColor }) => (
                 {value}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                {/* Icono pequeño en el subtítulo para dar contexto */}
                 <AccessTime fontSize="small" sx={{ color: color, opacity: 0.8 }} /> {subtitle}
             </Typography>
         </Box>
@@ -55,7 +53,6 @@ const StatCard = ({ title, value, subtitle, icon, color, bgColor }) => (
     </Paper>
 );
 
-// Datos simulados
 const ORDERS = [
     { id: 'WO-2023-001', equipo: 'Torno CNC Mazak', tipo: 'Correctivo', estado: 'Abierta', prioridad: 'Alta', progreso: 10 },
     { id: 'WO-2023-002', equipo: 'Compresor Aire #2', tipo: 'Preventivo', estado: 'En Proceso', prioridad: 'Media', progreso: 45 },
@@ -64,6 +61,8 @@ const ORDERS = [
 ];
 
 export default function Dashboard() {
+    const navigate = useNavigate();
+
     return (
         <Box>
             <Box sx={{ mb: 4 }}>
@@ -75,56 +74,55 @@ export default function Dashboard() {
                 </Typography>
             </Box>
 
-            {/* --- SECCIÓN KPI --- */}
-            {/* Grid2 usa la prop 'size' en lugar de xs, sm, md directos */}
+            {/* CORRECCIÓN 2: Sintaxis de Grid v1 (container -> item) */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
                     <StatCard 
                         title="Alertas Críticas" 
                         value="3" 
                         subtitle="REQUIEREN ATENCIÓN"
                         icon={<WarningAmber fontSize="medium" />} 
-                        color="#D32F2F" // Rojo Error
+                        color="#D32F2F" 
                         bgColor="#FFEBEE"
                     />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
                     <StatCard 
                         title="Equipos Operativos" 
                         value="94%" 
                         subtitle="OBJETIVO: 96%"
                         icon={<CheckCircleOutline fontSize="medium" />} 
-                        color="#2E7D32" // Verde Success
+                        color="#2E7D32" 
                         bgColor="#E8F5E9"
                     />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
                     <StatCard 
                         title="Órdenes Activas" 
                         value="12" 
                         subtitle="5 ASIGNADAS A TI"
                         icon={<BuildCircle fontSize="medium" />} 
-                        color="#1565C0" // Azul Primary
+                        color="#1565C0" 
                         bgColor="#E3F2FD"
                     />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
                     <StatCard 
                         title="Tiempo Promedio Rep." 
                         value="4.2h" 
                         subtitle="-15% VS MES PASADO"
                         icon={<AccessTime fontSize="medium" />} 
-                        color="#ED6C02" // Naranja Warning
+                        color="#ED6C02" 
                         bgColor="#FFF3E0"
                     />
                 </Grid>
             </Grid>
 
-            {/* --- SECCIÓN TABLA DETALLADA --- */}
+            {/* SECCIÓN TABLA DETALLADA */}
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
                 Órdenes de Trabajo Recientes
             </Typography>
@@ -137,7 +135,7 @@ export default function Dashboard() {
                             <TableCell fontWeight="bold">TIPO</TableCell>
                             <TableCell fontWeight="bold">PRIORIDAD</TableCell>
                             <TableCell fontWeight="bold">ESTADO</TableCell>
-                            <TableCell fontWeight="bold" width={150}>PROGRESO</TableCell>
+                            <TableCell fontWeight="bold" align="center">ACCIONES</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -167,26 +165,17 @@ export default function Dashboard() {
                                         {row.estado}
                                     </Typography>
                                 </TableCell>
-                                <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <Box sx={{ width: '100%', mr: 1 }}>
-                                            <LinearProgress 
-                                                variant="determinate" 
-                                                value={row.progreso} 
-                                                sx={{ 
-                                                    height: 6, 
-                                                    borderRadius: 3,
-                                                    bgcolor: '#e0e0e0',
-                                                    '& .MuiLinearProgress-bar': {
-                                                        bgcolor: row.progreso === 100 ? 'success.main' : 'primary.main'
-                                                    }
-                                                }} 
-                                            />
-                                        </Box>
-                                        <Box sx={{ minWidth: 35 }}>
-                                            <Typography variant="caption" color="text.secondary">{`${row.progreso}%`}</Typography>
-                                        </Box>
-                                    </Box>
+                                {/* BOTON DE ACCION */}
+                                <TableCell align="center">
+                                    <Tooltip title="Ver Detalles de Orden">
+                                        <IconButton 
+                                            color="primary" 
+                                            size="small"
+                                            onClick={() => navigate(`/ordenes/${row.id}`)} // Navegación a detalle
+                                        >
+                                            <Visibility />
+                                        </IconButton>
+                                    </Tooltip>
                                 </TableCell>
                             </TableRow>
                         ))}

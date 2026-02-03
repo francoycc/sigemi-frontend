@@ -1,23 +1,22 @@
 import React, { useState } from 'react';
 import { Box, CssBaseline, AppBar, Toolbar, Typography, IconButton, Badge } from '@mui/material';
-import { Notifications as NotificationsIcon, Logout as LogoutIcon, Menu as MenuIcon } from '@mui/icons-material';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { NotificationsOutlined, Logout as LogoutIcon, Menu as MenuIcon } from '@mui/icons-material';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import authService from '../services/authService';
-
-const DRAWER_WIDTH = 260;
+import { DRAWER_WIDTH } from '../config/constants';
 
 export default function MainLayout() {
     const navigate = useNavigate();
     const location = useLocation();
-
-    // Estado para controlar el Sidebar en versión celular
-    const [mobileOpen, setMobileOpen] = useState(false);
     
+    // Estado para controlar el Sidebar en version celular
+    const [mobileOpen, setMobileOpen] = useState(false);
+
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
     };
-    
+
     const handleLogout = () => {
         authService.logout();
         navigate('/login');
@@ -26,27 +25,24 @@ export default function MainLayout() {
     const getPageTitle = (path) => {
         switch(path) {
             case '/dashboard': return 'Panel de Control';
-            case '/equipos': return 'Administración y Control de Equipos';
+            case '/equipos': return 'Inventario de Equipos';
             case '/ordenes': return 'Gestión de Órdenes';
-            case '/tareas': return 'Gestión de Tareas';
-            case '/reportes': return 'Bussiness Intelligence';
-            default: return 'SIGEMI App';
+            default: return 'SIGEMI Enterprise';
         }
     };
 
     return (
-        <Box sx={{ display: 'flex', backgroundColor: '#F4F6F8', minHeight: '100vh' }}>
+        <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F5F5F5' }}>
             <CssBaseline />
             
-            {/* --- TOPBAR (Estilo Flotante) --- */}
             <AppBar 
                 position="fixed" 
-                elevation={0} // Sin sombra dura, solo borde
+                elevation={0}
                 sx={{ 
-                    width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` }, // Ajuste con el ancho del sidebar
+                    width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
                     ml: { sm: `${DRAWER_WIDTH}px` },
-                    backgroundColor: '#ffffff', // Fondo blanco
-                    borderBottom: '1px solid rgba(0,0,0,0.08)',
+                    backgroundColor: '#FFFFFF',
+                    borderBottom: '1px solid #E0E0E0',
                     color: 'text.primary',
                     transition: 'width 0.3s'
                 }}
@@ -56,35 +52,30 @@ export default function MainLayout() {
                         color="inherit"
                         edge="start"
                         onClick={handleDrawerToggle}
-                        sx={{ mr: 2, display: { sm: 'none' } }}
+                        sx={{ mr: 2, display: { sm: 'none' } }} 
                     >
                         <MenuIcon />
                     </IconButton>
 
-                    {/* Título de la Página Actual  */}
                     <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600, color: '#1565C0' }}>
                         {getPageTitle(location.pathname)}
                     </Typography>
                     
-                    {/* Acciones */}
-                    <IconButton color="inherit" sx={{ mr: 1 }}>
+                    <IconButton sx={{ mr: 1 }}>
                         <Badge badgeContent={3} color="error">
-                            <NotificationsIcon />
+                            <NotificationsOutlined />
                         </Badge>
                     </IconButton>
-
-                    <IconButton onClick={handleLogout} color="default" title="Salir">
-                        <Logout sx={{ color: 'text.secondary' }} />
+                    <IconButton onClick={handleLogout} color="default" title="Cerrar Sesión">
+                        <LogoutIcon sx={{ color: 'text.secondary' }} />
                     </IconButton>
                 </Toolbar>
             </AppBar>
 
-            {/* --- SIDEBAR --- */}
+            {/* Sidebar con lógica dual */}
             <Sidebar mobileOpen={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
 
-            {/* --- CONTENIDO PRINCIPAL --- */}
             <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8, width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` } }}>
-                {/* Aquí se renderizan las páginas hijas */}
                 <Outlet />
             </Box>
         </Box>

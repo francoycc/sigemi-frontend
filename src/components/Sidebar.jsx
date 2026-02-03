@@ -10,35 +10,35 @@ import {
     Build as TaskIcon,          
     BarChart as ReportIcon,
     Person as PersonIcon,
-    Settings as SettingsIcon
+    Settings as SettingsIcon,
+    Factory as PlaceIcon 
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { DRAWER_WIDTH } from '../config/constants';
 
 const MENU_ITEMS = [
     { text: 'Panel de Control', icon: <DashboardIcon />, path: '/dashboard' },
+    { text: 'Ubicaciones Técnicas', icon: <PlaceIcon />, path: '/ubicaciones' },
     { text: 'Inventario de Activos', icon: <EquipmentIcon />, path: '/equipos' },
     { text: 'Órdenes de Trabajo', icon: <OrdersIcon />, path: '/ordenes' },
     { text: 'Tareas Técnicas', icon: <TaskIcon />, path: '/tareas' },
     { text: 'Reportes y KPI', icon: <ReportIcon />, path: '/reportes' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen, handleDrawerToggle, window }) {
     const navigate = useNavigate();
     const location = useLocation();
 
-    //const user = JSON.parse(localStorage.getItem('user')) || { nombre: 'Operador', rol: 'Técnico' };
     const user = useMemo(() => {
         try {
             const storedUser = localStorage.getItem('user');
-            return storedUser ? JSON.parse(storedUser) : { nombre: 'Invitado', rol: 'Sin Acceso'};
+            return storedUser ? JSON.parse(storedUser) : { nombre: 'Invitado', rol: 'Sin Acceso' };
         } catch (e) {
-            console.error("Error al leer usuario:", e);
             return { nombre: 'Error', rol: 'Limpiar Cache' };
-        }   
+        }
     }, []);
 
-   const drawerContent = (
+    const drawerContent = (
         <>
             <Toolbar sx={{ px: 3 }}>
                 <Typography variant="h6" color="primary.main" sx={{ fontWeight: 800, letterSpacing: 1 }}>
@@ -57,7 +57,6 @@ export default function Sidebar() {
                                     selected={active}
                                     onClick={() => {
                                         navigate(item.path);
-                                        // Si estamos en móvil, cerramos el menú al hacer click
                                         if(mobileOpen && handleDrawerToggle) handleDrawerToggle(); 
                                     }}
                                     sx={{
@@ -110,13 +109,13 @@ export default function Sidebar() {
 
     return (
         <Box component="nav" sx={{ width: { sm: DRAWER_WIDTH }, flexShrink: { sm: 0 } }}>
-            {/* DRAWER CELULAR (TEMPORAL) */}
+            {/* Drawer Celular */}
             <Drawer
                 container={container}
                 variant="temporary"
                 open={mobileOpen}
                 onClose={handleDrawerToggle}
-                ModalProps={{ keepMounted: true }} 
+                ModalProps={{ keepMounted: true }}
                 sx={{
                     display: { xs: 'block', sm: 'none' },
                     '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
@@ -125,7 +124,7 @@ export default function Sidebar() {
                 {drawerContent}
             </Drawer>
 
-            {/* DRAWER PC (PERMANENTE) */}
+            {/* Drawer PC */}
             <Drawer
                 variant="permanent"
                 sx={{
