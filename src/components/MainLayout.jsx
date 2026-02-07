@@ -27,7 +27,7 @@ export default function MainLayout() {
             case '/dashboard': return 'Panel de Control';
             case '/equipos': return 'Inventario de Equipos';
             case '/ordenes': return 'Gestión de Órdenes';
-            default: return 'SIGEMI Enterprise';
+            default: return 'SIGEMI App';
         }
     };
 

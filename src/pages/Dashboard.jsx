@@ -1,11 +1,12 @@
 import React from 'react';
 import { 
     Grid, Paper, Typography, Box, Chip, Table, TableBody, 
-    TableCell, TableContainer, TableHead, TableRow, LinearProgress, Avatar 
+    TableCell, TableContainer, TableHead, TableRow, Avatar, IconButton, Tooltip 
 } from '@mui/material';
 import { 
-    WarningAmber, CheckCircleOutline, BuildCircle, AccessTime 
+    WarningAmber, CheckCircleOutline, BuildCircle, AccessTime, Visibility 
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 // --- COMPONENTE DE TARJETA KPI ---
 const StatCard = ({ title, value, subtitle, icon, color, bgColor }) => (
