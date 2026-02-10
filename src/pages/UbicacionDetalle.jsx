@@ -1,8 +1,8 @@
 import React, { useState, useEffect }from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Typography, Paper, Divider, Grid, Avatar, 
+import { Card, Box, Typography, Paper, Divider, Grid, Avatar, 
     Chip, Button, CircularProgress, CardContent} from '@mui/material';
-import { ArrowBack, PrecisionManufacturing, Edit, Bussines, 
+import { ArrowBack, PrecisionManufacturing, Edit, Business, 
     ViewModule, Place, EventNote
  } from '@mui/icons-material';
 import ubicacionService from '../services/ubicacionService';
@@ -43,7 +43,7 @@ export default function UbicacionDetalle() {
 
     const getIcon = () => {
         switch (ubicacion.tipo) {
-            case 'Planta': return <Bussines fontSize="large"/>;
+            case 'Planta': return <Business fontSize="large"/>;
             case 'Línea': return <PrecisionManufacturing fontSize ="large"/>;
             default: return <ViewModule fontSize="large"/>;
         }
