@@ -27,6 +27,10 @@ export default function MainLayout() {
             case '/dashboard': return 'Panel de Control';
             case '/equipos': return 'Inventario de Equipos';
             case '/ordenes': return 'Gestión de Órdenes';
+            case '/ubicaciones': return 'Ubicaciones';
+            case '/ubicaciones/:id': return 'Detalle de Ubicación';
+            case '/usuarios': return 'Usuarios';
+            case '/reportes': return 'Reportes';
             default: return 'SIGEMI App';
         }
     };

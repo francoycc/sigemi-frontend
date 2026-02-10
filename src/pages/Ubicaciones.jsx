@@ -4,43 +4,39 @@ import {
     TableCell, TableContainer, TableHead, TableRow, Chip, 
     IconButton, Tooltip, CircularProgress, Avatar
 } from '@mui/material';
-import { Add, Edit, FolderOpen, AccountTree } from '@mui/icons-material';
+import { 
+    Add, Edit, FolderOpen, AccountTree, Visibility
+} from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import ubicacionService from '../services/ubicacionService';
 import UbicacionBreadcrumbs from '../components/UbicacionBreadcrumbs';
 
 export default function Ubicaciones() {
-    // ID de la ubicación actual que estamos viendo (null = Raíz)
+    const navigate = useNavigate(); // Hook de navegación
     const [currentId, setCurrentId] = useState(null);
-    // Lista de ubicaciones hijas de la actual
     const [children, setChildren] = useState([]);
-    //  Ruta completa para el breadcrumb (Array de objetos)
     const [path, setPath] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Carga los datos cada vez que cambia el currentId
     useEffect(() => {
         loadView(currentId);
     }, [currentId]);
 
-    // Carga hijos y reconstruye el path
     const loadView = async (id) => {
         setLoading(true);
         try {
             const data = await ubicacionService.getByParentId(id);
             setChildren(data);
 
-            // Reconstruir el path 
             if (id === null) {
                 setPath([]);
             } else {
-                //  agregamos el nodo actual al path existente
                 const currentNode = await ubicacionService.getById(id);
-                
-                const existingIndex = path.findIndex(p => p.id === id);
-                if (existingIndex >= 0) {
-                    setPath(path.slice(0, existingIndex + 1));
-                } else {
+                const existingIndex = path.findIndex(p => p.idUbicacion === id);
+                if (existingIndex === -1) {
                     setPath(prev => [...prev, currentNode]);
+                } else {
+                    setPath(prev => prev.slice(0, existingIndex + 1));
                 }
             }
         } catch (error) {
@@ -50,26 +46,21 @@ export default function Ubicaciones() {
         }
     };
 
-    // Handler para navegar 
     const handleNavigate = (id) => {
         setCurrentId(id);
     };
 
     return (
         <Box>
-            {/* Encabezado con icono de jerarquía */}
+            {/* Header */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar sx={{ bgcolor: 'primary.light', color: 'primary.main' }} variant="rounded">
                         <AccountTree />
                     </Avatar>
                     <Box>
-                        <Typography variant="h5" fontWeight="bold">
-                            Estructura de Activos
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Navegue por la jerarquía de plantas y sectores.
-                        </Typography>
+                        <Typography variant="h5" fontWeight="bold">Estructura de Activos</Typography>
+                        <Typography variant="body2" color="text.secondary">Navegue por la jerarquía de plantas y sectores.</Typography>
                     </Box>
                 </Box>
                 <Button variant="contained" startIcon={<Add />} sx={{ px: 3, borderRadius: 2 }}>
@@ -77,10 +68,8 @@ export default function Ubicaciones() {
                 </Button>
             </Box>
             
-            {/* Breadcrumbs de Navegación */}
             <UbicacionBreadcrumbs path={path} onNavigate={handleNavigate} />
 
-            {/* Tabla de Resultados */}
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
                 <TableContainer>
                     <Table sx={{ minWidth: 650 }}>
@@ -104,10 +93,12 @@ export default function Ubicaciones() {
                                     </TableCell>
                                 </TableRow>
                             ) : children.map((row) => (
-                                <TableRow key={row.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                    {/* Clic en el código para navegar */}
-                                    <TableCell sx={{ fontFamily: 'monospace', fontWeight: 600, color: 'primary.main', cursor: 'pointer' }}
-                                               onClick={() => handleNavigate(row.id)}>
+                                <TableRow key={row.idUbicacion} hover>
+                                    {/* Clic en Código -> BAJA DE NIVEL (Navegación Jerárquica) */}
+                                    <TableCell 
+                                        sx={{ fontFamily: 'monospace', fontWeight: 600, color: 'primary.main', cursor: 'pointer' }}
+                                        onClick={() => handleNavigate(row.idUbicacion)}
+                                    >
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             <FolderOpen fontSize="small" color="action" />
                                             {row.codigo}
@@ -118,14 +109,19 @@ export default function Ubicaciones() {
                                         <Chip label={row.tipo} size="small" sx={{ borderRadius: 1, fontWeight: 500, bgcolor: '#E3F2FD', color: '#1565C0' }} />
                                     </TableCell>
                                     <TableCell align="right">
-                                        <Tooltip title="Navegar dentro">
-                                            <IconButton size="small" color="primary" onClick={() => handleNavigate(row.id)}>
-                                                <FolderOpen fontSize="small" />
+                                        <Tooltip title="Ver Detalle Completo">
+                                            {/* Clic en Ojo -> VA A LA PANTALLA DE DETALLE (Nueva Ruta) */}
+                                            <IconButton 
+                                                size="small" 
+                                                color="primary" 
+                                                onClick={() => navigate(`/ubicaciones/${row.idUbicacion}`)}
+                                            >
+                                                <Visibility fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
-                                        <Tooltip title="Editar">
-                                            <IconButton size="small" sx={{ color: 'text.secondary' }}>
-                                                <Edit fontSize="small" />
+                                        <Tooltip title="Navegar dentro">
+                                            <IconButton size="small" sx={{ color: 'text.secondary' }} onClick={() => handleNavigate(row.idUbicacion)}>
+                                                <FolderOpen fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                     </TableCell>
