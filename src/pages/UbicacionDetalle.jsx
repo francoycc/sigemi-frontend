@@ -6,7 +6,7 @@ import { ArrowBack, PrecisionManufacturing, Edit, Business,
     ViewModule, Place, EventNote
  } from '@mui/icons-material';
 import ubicacionService from '../services/ubicacionService';
-
+import UbicacionForm from '../components/UbicacionForm';
 
 export default function UbicacionDetalle() {
     const {id} = useParams();
@@ -14,11 +14,14 @@ export default function UbicacionDetalle() {
     const [ubicacion, setUbicacion] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const [formOpen, setFormOpen] = useState(false);
+
     useEffect(() => {
         loadData();
     }, [id]);
 
     const loadData = async() => {
+        console.log("Cargando detalle para ID:", id);
         try {
             const data = await ubicacionService.getById(id);
             setUbicacion(data);
@@ -29,9 +32,19 @@ export default function UbicacionDetalle() {
         }
     };
 
-    if (loading) {
-        return (
-            <Box sx = {{ display: 'flex', justifyContent: 'center', mt: 10}}>
+    const handleUpdateSubmit = async (formData) => {
+        console.log("Datos recibidos del formulario para actualización:", formData);
+        try {
+            const updatedData = await ubicacionService.update(id, formData);
+            setUbicacion(updatedData); 
+            setFormOpen(false);
+        } catch (error) {
+            alert(error.response?.data?.message || "Error al actualizar");
+        }
+    };
+
+    if (loading) { 
+        return (<Box sx = {{ display: 'flex', justifyContent: 'center', mt: 10}}>
                 <CircularProgress />
             </Box>
         );
@@ -66,38 +79,19 @@ export default function UbicacionDetalle() {
             {/* Tarjeta principal de Información */}
             <Paper elevation={0} sx={{ p: 4, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-                    <Avatar sx={{
-                        width: 80, height: 80,
-                        bgcolor: 'primary.main', 
-                        mr: 3,
-                        boxShadow: '0 4px 12px rgba(21, 101, 192 ,0.2)'
-                    }}>
+                    <Avatar sx={{ width: 80, height: 80, bgcolor: 'primary.main', mr: 3, boxShadow: '0 4px 12px rgba(21, 101, 192 ,0.2)'}}>
                         {getIcon()}
                     </Avatar>
                 <Box>
-                    <Typography variant="h4" fontWeight="bold" gutterBottom>
-                        {ubicacion.nombre}    
-                    </Typography>
+                    <Typography variant="h4" fontWeight="bold" gutterBottom>{ubicacion.nombre}</Typography>
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Chip 
-                            icon ={<Place fontSize = 'small'/>} 
-                            label={ubicacion.codigo}
-                            sx={{ fontWeight: 'bold', borderRadius: 1}}
-                        />
-                        <Chip 
-                            label={ubicacion.tipo} 
-                            color="primary" 
-                            variant = "outlined"
-                            sx = {{ fontWeight: 'bold', borderRadius: 1}}    
-                        />
-                        <Chip 
-                                label={ubicacion.estado} 
-                                color={ubicacion.estado === 'Activo' ? 'success' : 'default'} 
-                                sx={{ fontWeight: 'bold', borderRadius: 1 }} 
-                            />
+                        <Chip icon ={<Place fontSize = 'small'/>} label={ubicacion.codigo} sx={{ fontWeight: 'bold', borderRadius: 1}}/>
+                        <Chip label={ubicacion.tipo} color="primary" variant = "outlined" sx = {{ fontWeight: 'bold', borderRadius: 1}}/>
+                        <Chip label={ubicacion.estado} color={ubicacion.estado === 'Activo' ? 'success' : 'default'} sx={{ fontWeight: 'bold', borderRadius: 1 }} />
                     </Box>
                 </Box>
                 <Box sx={{ ml: 'auto' }}>
+                    {/* ABRIR MODO EDICIÓN */}
                         <Button variant="contained" startIcon={<Edit />}>
                             Editar
                         </Button>
@@ -147,6 +141,13 @@ export default function UbicacionDetalle() {
                     </Grid>
                 </Grid>
             </Paper>
+            {/* COMPONENTE REUTILIZABLE PARA EDITAR */}
+            <UbicacionForm 
+                open={formOpen} 
+                onClose={() => setFormOpen(false)} 
+                onSubmit={handleUpdateSubmit}
+                initialData={ubicacion} 
+            />
         </Box>
     );
 }

@@ -5,32 +5,38 @@ import {
     IconButton, Tooltip, CircularProgress, Avatar
 } from '@mui/material';
 import { 
-    Add, Edit, FolderOpen, AccountTree, Visibility
+    Add, Edit, FolderOpen, AccountTree, Visibility , Delete
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import ubicacionService from '../services/ubicacionService';
 import UbicacionBreadcrumbs from '../components/UbicacionBreadcrumbs';
+import UbicacionForm from '../components/UbicacionForm';
+
 
 export default function Ubicaciones() {
-    const navigate = useNavigate(); // Hook de navegación
+    const navigate = useNavigate();
     const [currentId, setCurrentId] = useState(null);
     const [children, setChildren] = useState([]);
     const [path, setPath] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [formOpen, setFormOpen] = useState(false);
 
     useEffect(() => {
         loadView(currentId);
     }, [currentId]);
 
     const loadView = async (id) => {
+        console.log("Cargando vista para ID:", id);
         setLoading(true);
         try {
             const data = await ubicacionService.getByParentId(id);
             setChildren(data);
-
             if (id === null) {
+                console.log("Cargando raíz, limpiando path");
                 setPath([]);
             } else {
+                console.log("Cargando nodo, actualizando path");
                 const currentNode = await ubicacionService.getById(id);
                 const existingIndex = path.findIndex(p => p.idUbicacion === id);
                 if (existingIndex === -1) {
@@ -42,12 +48,35 @@ export default function Ubicaciones() {
         } catch (error) {
             console.error("Error cargando jerarquía", error);
         } finally {
+            console.log("Carga de vista finalizada");
             setLoading(false);
         }
     };
 
-    const handleNavigate = (id) => {
-        setCurrentId(id);
+    const handleNavigate = (id) => setCurrentId(id);
+    const handleCreateSubmit = async (formData) => {
+        console.log("Datos recibidos del formulario para creación:", formData); 
+        try {
+            await ubicacionService.create(formData);
+            setFormOpen(false);
+            loadView(currentId);
+        } catch (error) {
+            console.error("Error al crear ubicación:", error);
+            alert(error.response?.data?.message || "Error al crear la ubicación");
+        }
+    };
+
+    const handleDelete = async (id, nombre) => {
+        console.log(`Eliminar ubicación ID ${id} con nombre "${nombre}"`);
+        if (window.confirm(`¿Estás seguro que deseas dar de baja: ${nombre}?`)) {
+            try {
+                await ubicacionService.remove(id);
+                loadView(currentId); 
+            } catch (error) {
+                console.error("Error al eliminar ubicación:", error);
+                alert("Error al intentar eliminar.");
+            }
+        }
     };
 
     return (
@@ -63,7 +92,10 @@ export default function Ubicaciones() {
                         <Typography variant="body2" color="text.secondary">Navegue por la jerarquía de plantas y sectores.</Typography>
                     </Box>
                 </Box>
-                <Button variant="contained" startIcon={<Add />} sx={{ px: 3, borderRadius: 2 }}>
+                <Button variant="contained" startIcon={
+                    <Add />} sx={{ px: 3, borderRadius: 2 }}
+                    onClick={() => setFormOpen(true)}
+                >
                     Nuevo Nodo
                 </Button>
             </Box>
@@ -77,24 +109,17 @@ export default function Ubicaciones() {
                             <TableRow>
                                 <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>CÓDIGO</TableCell>
                                 <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>NOMBRE</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>TIPO</TableCell>
+                                <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>ESTADO</TableCell>
                                 <TableCell align="right" sx={{ fontWeight: 600, color: 'text.secondary' }}>ACCIONES</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center" sx={{ py: 5 }}><CircularProgress /></TableCell>
-                                </TableRow>
+                                <TableRow><TableCell colSpan={4} align="center" sx={{ py: 5 }}><CircularProgress /></TableCell></TableRow>
                             ) : children.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                                        No hay elementos hijos en este nivel.
-                                    </TableCell>
-                                </TableRow>
+                                <TableRow><TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>No hay elementos hijos.</TableCell></TableRow>
                             ) : children.map((row) => (
                                 <TableRow key={row.idUbicacion} hover>
-                                    {/* Clic en Código -> BAJA DE NIVEL (Navegación Jerárquica) */}
                                     <TableCell 
                                         sx={{ fontFamily: 'monospace', fontWeight: 600, color: 'primary.main', cursor: 'pointer' }}
                                         onClick={() => handleNavigate(row.idUbicacion)}
@@ -106,22 +131,19 @@ export default function Ubicaciones() {
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 500 }}>{row.nombre}</TableCell>
                                     <TableCell>
-                                        <Chip label={row.tipo} size="small" sx={{ borderRadius: 1, fontWeight: 500, bgcolor: '#E3F2FD', color: '#1565C0' }} />
+                                        <Chip label={row.estado} size="small" 
+                                              color={row.estado === 'Operativo' ? 'success' : 'error'} 
+                                              variant="outlined" sx={{ fontWeight: 600 }} />
                                     </TableCell>
                                     <TableCell align="right">
-                                        <Tooltip title="Ver Detalle Completo">
-                                            {/* Clic en Ojo -> VA A LA PANTALLA DE DETALLE (Nueva Ruta) */}
-                                            <IconButton 
-                                                size="small" 
-                                                color="primary" 
-                                                onClick={() => navigate(`/ubicaciones/${row.idUbicacion}`)}
-                                            >
+                                        <Tooltip title="Ver Detalle">
+                                            <IconButton size="small" color="primary" onClick={() => navigate(`/ubicaciones/${row.idUbicacion}`)}>
                                                 <Visibility fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
-                                        <Tooltip title="Navegar dentro">
-                                            <IconButton size="small" sx={{ color: 'text.secondary' }} onClick={() => handleNavigate(row.idUbicacion)}>
-                                                <FolderOpen fontSize="small" />
+                                        <Tooltip title="Dar de Baja">
+                                            <IconButton size="small" color="error" onClick={() => handleDelete(row.idUbicacion, row.nombre)}>
+                                                <Delete fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                     </TableCell>
@@ -131,6 +153,15 @@ export default function Ubicaciones() {
                     </Table>
                 </TableContainer>
             </Paper>
+           
+            {/* COMPONENTE REUTILIZABLE PARA CREAR */}
+            <UbicacionForm 
+                open={formOpen} 
+                onClose={() => setFormOpen(false)} 
+                onSubmit={handleCreateSubmit}
+                idPadre={currentId}
+            />                 
+
         </Box>
     );
 }
