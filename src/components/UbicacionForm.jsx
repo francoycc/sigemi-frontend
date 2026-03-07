@@ -5,10 +5,11 @@ import {
 } from '@mui/material';
 import { BuildCircle } from '@mui/icons-material';
 
-const TIPOS = ['Planta', 'Sector', 'Línea', 'Área'];
+const TIPOS = ['Planta', 'Sector', 'Línea', 'Puesto', 'Máquina'];
 const ESTADOS = ['Operativo', 'FueraDeServicio']; 
 
 export default function UbicacionForm({ open, onClose, onSubmit, initialData, idPadre }) {
+    console.log('UbicacionForm:', { open, initialData, idPadre });
     const [formData, setFormData] = useState({
         codigo: '',
         nombre: '',
@@ -19,11 +20,13 @@ export default function UbicacionForm({ open, onClose, onSubmit, initialData, id
 
     useEffect(() => {
         if (initialData) {
+            console.log('[UbicacionForm] Cargando datos para edición:', initialData);
             setFormData({
                 ...initialData,
                 idPadre: initialData.idPadre || null 
             });
         } else {
+            console.log('[UbicacionForm]Inicializando formulario para nueva ubicación con idPadre:', idPadre);
             setFormData({
                 codigo: '',
                 nombre: '',
@@ -67,7 +70,7 @@ export default function UbicacionForm({ open, onClose, onSubmit, initialData, id
                                 onChange={handleChange}
                                 fullWidth
                                 required
-                                disabled={!!initialData} // No editar código
+                                disabled={!!initialData} 
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>

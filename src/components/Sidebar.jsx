@@ -1,141 +1,99 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { 
     Drawer, List, ListItem, ListItemButton, ListItemIcon, 
-    ListItemText, Toolbar, Divider, Box, Typography, Avatar 
+    ListItemText, Toolbar, Typography, Divider, Box, Avatar,
+    IconButton
 } from '@mui/material';
 import { 
-    Dashboard as DashboardIcon,
-    PrecisionManufacturing as EquipmentIcon, 
-    Assignment as OrdersIcon,   
-    Build as TaskIcon,          
-    BarChart as ReportIcon,
-    Person as PersonIcon,
-    Settings as SettingsIcon,
-    Factory as PlaceIcon 
+    Dashboard, Inventory, Assignment, Build, BarChart, Settings, 
+    Place 
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { DRAWER_WIDTH } from '../config/constants';
+
+const DRAWER_WIDTH = 260; 
 
 const MENU_ITEMS = [
-    { text: 'Panel de Control', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Ubicaciones Técnicas', icon: <PlaceIcon />, path: '/ubicaciones' },
-    { text: 'Inventario de Activos', icon: <EquipmentIcon />, path: '/equipos' },
-    { text: 'Órdenes de Trabajo', icon: <OrdersIcon />, path: '/ordenes' },
-    { text: 'Tareas Técnicas', icon: <TaskIcon />, path: '/tareas' },
-    { text: 'Reportes y KPI', icon: <ReportIcon />, path: '/reportes' },
+    { text: 'Panel de Control', icon: <Dashboard />, path: '/dashboard' },
+    { text: 'Ubicaciones Técnicas', icon: <Place />, path: '/ubicaciones' },
+    { text: 'Inventario de Equipos', icon: <Inventory />, path: '/equipos' },
+    { text: 'Órdenes de Trabajo', icon: <Assignment />, path: '/ordenes' },
+    { text: 'Tareas Técnicas', icon: <Build />, path: '/tareas' },
+    { text: 'Reportes y KPI', icon: <BarChart />, path: '/reportes' },
 ];
 
-export default function Sidebar({ mobileOpen, handleDrawerToggle, window }) {
+export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
     const navigate = useNavigate();
     const location = useLocation();
+    
+    const handleNavigate = (path) => {
+        navigate(path);
+        if (mobileOpen && handleDrawerToggle) handleDrawerToggle();
+    };
 
-    const user = useMemo(() => {
-        try {
-            const storedUser = localStorage.getItem('user');
-            return storedUser ? JSON.parse(storedUser) : { nombre: 'Invitado', rol: 'Sin Acceso' };
-        } catch (e) {
-            return { nombre: 'Error', rol: 'Limpiar Cache' };
-        }
-    }, []);
+    const isSelected = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
     const drawerContent = (
-        <>
-            <Toolbar sx={{ px: 3 }}>
-                <Typography variant="h6" color="primary.main" sx={{ fontWeight: 800, letterSpacing: 1 }}>
-                    SIGEMI <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.7em', fontWeight: 400 }}>App</Box>
-                </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#FAFBFD' }}>
+            <Toolbar sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                <Typography variant="h5" fontWeight="900" color="primary">SIGEMI <Typography variant="caption" color="text.secondary">ENT</Typography></Typography>
             </Toolbar>
-            <Divider />
             
-            <Box sx={{ overflow: 'auto', flexGrow: 1, py: 2 }}>
-                <List>
-                    {MENU_ITEMS.map((item) => {
-                        const active = location.pathname === item.path;
-                        return (
-                            <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
-                                <ListItemButton 
-                                    selected={active}
-                                    onClick={() => {
-                                        navigate(item.path);
-                                        if(mobileOpen && handleDrawerToggle) handleDrawerToggle(); 
-                                    }}
-                                    sx={{
-                                        mx: 1.5,
-                                        borderRadius: 1.5,
-                                        borderLeft: active ? '4px solid #1565C0' : '4px solid transparent',
-                                        backgroundColor: active ? 'primary.light' : 'transparent',
-                                        color: active ? 'primary.dark' : 'text.secondary',
-                                        '&:hover': {
-                                            backgroundColor: active ? 'primary.light' : 'rgba(0,0,0,0.04)',
-                                        },
-                                        '&.Mui-selected': {
-                                            backgroundColor: 'primary.light',
-                                        }
-                                    }}
-                                >
-                                    <ListItemIcon sx={{ color: active ? 'primary.main' : 'text.secondary', minWidth: 40 }}>
-                                        {item.icon}
-                                    </ListItemIcon>
-                                    <ListItemText 
-                                        primary={item.text} 
-                                        primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: active ? 700 : 500 }} 
-                                    />
-                                </ListItemButton>
-                            </ListItem>
-                        );
-                    })}
+            <Divider sx={{ mb: 2 }} />
+
+            <Box sx={{ flexGrow: 1, p: 2 }}>
+                <Typography variant="caption" fontWeight="700" textTransform="uppercase" color="text.secondary" display="block" sx={{ mb: 1, ml: 1.5 }}>
+                    Menú Principal
+                </Typography>
+                <List sx={{ pt: 0 }}>
+                    {MENU_ITEMS.map((item) => (
+                        <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+                            <ListItemButton 
+                                onClick={() => handleNavigate(item.path)}
+                                sx={{ 
+                                    borderRadius: 2, 
+                                    bgcolor: isSelected(item.path) ? 'primary.main' : 'transparent',
+                                    color: isSelected(item.path) ? 'white' : 'text.primary',
+                                    '&:hover': { bgcolor: isSelected(item.path) ? 'primary.dark' : '#f0f0f0' }
+                                }}
+                            >
+                                <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>{item.icon}</ListItemIcon>
+                                <ListItemText primary={item.text} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: isSelected(item.path) ? 600 : 400 }} />
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
                 </List>
             </Box>
 
             <Divider />
-            <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, bgcolor: '#FAFAFA' }}>
-                <Avatar sx={{ bgcolor: 'secondary.main', width: 40, height: 40 }}>
-                    <PersonIcon />
-                </Avatar>
-                <Box sx={{ overflow: 'hidden' }}>
-                    <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700, color: 'text.primary' }}>
-                        {user.nombre}
-                    </Typography>
-                    <Typography variant="caption" noWrap sx={{ color: 'text.secondary', display: 'block' }}>
-                        {user.rol}
-                    </Typography>
+
+            <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'white' }}>
+                <Avatar sx={{ bgcolor: 'secondary.main' }}>F</Avatar>
+                <Box>
+                    <Typography variant="subtitle2" fontWeight="700">Franco CC</Typography>
+                    <Typography variant="caption" color="text.secondary">Administrador</Typography>
                 </Box>
-                <SettingsIcon fontSize="small" sx={{ color: 'text.disabled', ml: 'auto', cursor: 'pointer' }} />
+                <IconButton size="small" sx={{ ml: 'auto' }} onClick={() => navigate('/login')}>
+                    <Settings fontSize="small" />
+                </IconButton>
             </Box>
-        </>
+        </Box>
     );
 
-    const container = window !== undefined ? () => window().document.body : undefined;
-
     return (
-        <Box component="nav" sx={{ width: { sm: DRAWER_WIDTH }, flexShrink: { sm: 0 } }}>
-            {/* Drawer Celular */}
+        <Box component="nav" sx={{ width: { lg: DRAWER_WIDTH }, flexShrink: { lg: 0 } }}>
             <Drawer
-                container={container}
                 variant="temporary"
                 open={mobileOpen}
                 onClose={handleDrawerToggle}
                 ModalProps={{ keepMounted: true }}
-                sx={{
-                    display: { xs: 'block', sm: 'none' },
-                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
-                }}
+                sx={{ display: { xs: 'block', lg: 'none' }, '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH, border: 'none' } }}
             >
                 {drawerContent}
             </Drawer>
-
-            {/* Drawer PC */}
             <Drawer
                 variant="permanent"
-                sx={{
-                    display: { xs: 'none', sm: 'block' },
-                    '& .MuiDrawer-paper': { 
-                        boxSizing: 'border-box', 
-                        width: DRAWER_WIDTH,
-                        borderRight: '1px solid rgba(0,0,0,0.08)'
-                    },
-                }}
                 open
+                sx={{ display: { xs: 'none', lg: 'block' }, '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH, borderRight: '1px solid', borderColor: 'divider' } }}
             >
                 {drawerContent}
             </Drawer>
