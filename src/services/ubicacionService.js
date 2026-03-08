@@ -3,6 +3,18 @@ import axios from 'axios';
 // URL del Backend
 const API_URL = 'http://localhost:8080/api/ubicaciones';
 
+
+const getAll = async () => {
+    console.log(`[UbicacionService] Solicitando TODAS las ubicaciones`);
+    try {
+        const response = await axios.get(API_URL);
+        return response.data;
+    } catch (error) {
+        console.error("[UbicacionService] Error obteniendo todas las ubicaciones:", error);
+        throw error;
+    }
+};
+
 const getByParentId = async (parentId) => {
    console.log(`[UbicacionService] Solicitando hijos para ID Padre: ${parentId || 'RAIZ'}`);
 
@@ -66,6 +78,7 @@ const remove = async (id) => {
 
 
 const ubicacionService = {
+    getAll,
     getByParentId,
     getById,
     create,

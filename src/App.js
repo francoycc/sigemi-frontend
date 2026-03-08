@@ -23,11 +23,12 @@ function App() {
              <Route path="/dashboard" element={<Dashboard />} />
              <Route path="/ubicaciones" element={<Ubicaciones />} />
              
-             {/* RUTAS ABM EN PÁGINA COMPLETA */}
-             <Route path="/ubicaciones/crear" element={<UbicacionFormPage />} /> 
+             {/* RUTAS ABM EN PÁGINA COMPLETA */} 
+             <Route path="/ubicaciones" element={<Ubicaciones />} />
+             <Route path="/ubicaciones/nueva" element={<UbicacionFormPage />} />
              <Route path="/ubicaciones/:id" element={<UbicacionDetalle />} />  
-             <Route path="/ubicaciones/:id/editar" element={<UbicacionFormPage />} /> 
-             
+             <Route path="/ubicaciones/editar/:id" element={<UbicacionFormPage />} />
+            
              {/* Placeholders */}
              <Route path="/equipos" element={<h2>Gestión de Equipos</h2>} />
              <Route path="/ordenes" element={<h2>Listado de Órdenes</h2>} />

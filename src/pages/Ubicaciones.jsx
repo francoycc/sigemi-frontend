@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Box, Typography, Paper, Button, Table, TableBody, 
     TableCell, TableContainer, TableHead, TableRow, Chip, 
     IconButton, Tooltip, CircularProgress, Avatar
 } from '@mui/material';
 import { 
-    Add, Edit, FolderOpen, AccountTree, Visibility , Delete
+    Add, Edit, FolderOpen, AccountTree, Delete
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import ubicacionService from '../services/ubicacionService';
 import UbicacionBreadcrumbs from '../components/UbicacionBreadcrumbs';
-import UbicacionForm from '../components/UbicacionForm';
-
 
 export default function Ubicaciones() {
     const navigate = useNavigate();
@@ -20,13 +18,8 @@ export default function Ubicaciones() {
     const [path, setPath] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const [formOpen, setFormOpen] = useState(false);
-
-    useEffect(() => {
-        loadView(currentId);
-    }, [currentId]);
-
-    const loadView = async (id) => {
+    // Envolvemos loadView en useCallback para poder usarlo como dependencia en useEffect sin causar renders infinitos
+    const loadView = useCallback(async (id) => {
         console.log("Cargando vista para ID:", id);
         setLoading(true);
         try {
@@ -38,12 +31,14 @@ export default function Ubicaciones() {
             } else {
                 console.log("Cargando nodo, actualizando path");
                 const currentNode = await ubicacionService.getById(id);
-                const existingIndex = path.findIndex(p => p.idUbicacion === id);
-                if (existingIndex === -1) {
-                    setPath(prev => [...prev, currentNode]);
-                } else {
-                    setPath(prev => prev.slice(0, existingIndex + 1));
-                }
+                setPath(prev => {
+                    const existingIndex = prev.findIndex(p => p.idUbicacion === id);
+                    if (existingIndex === -1) {
+                        return [...prev, currentNode];
+                    } else {
+                        return prev.slice(0, existingIndex + 1);
+                    }
+                });
             }
         } catch (error) {
             console.error("Error cargando jerarquía", error);
@@ -51,20 +46,13 @@ export default function Ubicaciones() {
             console.log("Carga de vista finalizada");
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadView(currentId);
+    }, [currentId, loadView]);
 
     const handleNavigate = (id) => setCurrentId(id);
-    const handleCreateSubmit = async (formData) => {
-        console.log("Datos recibidos del formulario para creación:", formData); 
-        try {
-            await ubicacionService.create(formData);
-            setFormOpen(false);
-            loadView(currentId);
-        } catch (error) {
-            console.error("Error al crear ubicación:", error);
-            alert(error.response?.data?.message || "Error al crear la ubicación");
-        }
-    };
 
     const handleDelete = async (id, nombre) => {
         console.log(`Eliminar ubicación ID ${id} con nombre "${nombre}"`);
@@ -92,9 +80,9 @@ export default function Ubicaciones() {
                         <Typography variant="body2" color="text.secondary">Navegue por la jerarquía de plantas y sectores.</Typography>
                     </Box>
                 </Box>
-                <Button variant="contained" startIcon={
-                    <Add />} sx={{ px: 3, borderRadius: 2 }}
-                    onClick={() => setFormOpen(true)}
+                {/* Navegamos directamente a la nueva página de creación */}
+                <Button variant="contained" startIcon={<Add />} sx={{ px: 3, borderRadius: 2 }}
+                    onClick={() => navigate('/ubicaciones/nueva')}
                 >
                     Nuevo Nodo
                 </Button>
@@ -136,9 +124,10 @@ export default function Ubicaciones() {
                                               variant="outlined" sx={{ fontWeight: 600 }} />
                                     </TableCell>
                                     <TableCell align="right">
-                                        <Tooltip title="Ver Detalle">
-                                            <IconButton size="small" color="primary" onClick={() => navigate(`/ubicaciones/${row.idUbicacion}`)}>
-                                                <Visibility fontSize="small" />
+                                        {/* Botón para Editar navegando a la página con el ID */}
+                                        <Tooltip title="Editar">
+                                            <IconButton size="small" color="primary" onClick={() => navigate(`/ubicaciones/editar/${row.idUbicacion}`)}>
+                                                <Edit fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                         <Tooltip title="Dar de Baja">
@@ -153,15 +142,6 @@ export default function Ubicaciones() {
                     </Table>
                 </TableContainer>
             </Paper>
-           
-            {/* COMPONENTE REUTILIZABLE PARA CREAR */}
-            <UbicacionForm 
-                open={formOpen} 
-                onClose={() => setFormOpen(false)} 
-                onSubmit={handleCreateSubmit}
-                idPadre={currentId}
-            />                 
-
         </Box>
     );
 }

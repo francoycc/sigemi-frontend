@@ -1,237 +1,197 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-    Box, Typography, Paper, TextField, MenuItem, Grid, Button, 
-    Avatar, Breadcrumbs, Link, Divider, Card, CardContent, CircularProgress,
-    List, ListItemButton, Collapse
-} from '@mui/material';
-import { 
-    Settings, Place, PrecisionManufacturing, Business, 
-    ViewModule, ExpandLess, ExpandMore, AccountTree, AddCircleOutline 
-} from '@mui/icons-material';
+import { useNavigate, useParams } from 'react-router-dom';
 import ubicacionService from '../services/ubicacionService';
 
-// --- MOCK DE DATOS DE JERARQUÍA PARA EL WIDGET SELECTOR ---
-const HIERARCHY_DATA = {
-    id: 'roots',
-    nombre: 'Ubicaciones',
-    children: [
-        {
-            id: 1,
-            nombre: 'Planta Rosario',
-            tipo: 'Planta',
-            children: [
-                { id: 3, nombre: 'Sector Mecanizado', tipo: 'Sector' },
-                { id: 4, nombre: 'Planta Rosario / Fuera de Servicio', tipo: 'Sector' },
-            ]
-        },
-        { id: 2, nombre: 'Planta Santa Fe', tipo: 'Planta' },
-        { id: 5, nombre: 'Criticidad Alta (Sin padre)', tipo: 'Planta' }
-    ]
-};
-
-// --- SUB-COMPONENTE: WIDGET DE ÁRBOL DE JERARQUÍA ---
-const HierarchyTreeWidget = ({ data, selectedId, onSelect }) => {
-    const [openNodes, setOpenNodes] = useState({ roots: true });
-
-    const handleToggle = (id) => {
-        setOpenNodes(prev => ({ ...prev, [id]: !prev[id] }));
-    };
-
-    const renderTreeItem = (item) => {
-        const isSelected = selectedId === item.id;
-        const hasChildren = item.children && item.children.length > 0;
-
-        return (
-            <Box key={item.id} sx={{ pl: item.id === 'roots' ? 0 : 3 }}>
-                <ListItemButton 
-                    onClick={() => {
-                        if (item.id !== 'roots') onSelect(item.id);
-                        if (hasChildren) handleToggle(item.id);
-                    }}
-                    sx={{ 
-                        borderRadius: 1, mb: 0.5,
-                        pl: item.id === 'roots' ? 1 : 1.5,
-                        bgcolor: isSelected ? 'primary.light' : 'transparent',
-                        color: isSelected ? 'primary.main' : 'text.primary',
-                        fontWeight: isSelected ? 600 : 400
-                    }}
-                >
-                    <Place fontSize="small" sx={{ mr: 1, color: isSelected ? 'inherit' : 'text.secondary' }} />
-                    <Typography variant="body2">{item.nombre}</Typography>
-                    {hasChildren ? (openNodes[item.id] ? <ExpandLess size={18} /> : <ExpandMore size={18} />) : null}
-                </ListItemButton>
-                
-                {hasChildren && (
-                    <Collapse in={openNodes[item.id]} timeout="auto" unmountOnExit>
-                        <List component="div" disablePadding>
-                            {item.children.map(child => renderTreeItem(child))}
-                        </List>
-                    </Collapse>
-                )}
-            </Box>
-        );
-    };
-
-    return (
-        <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'white', p: 1, maxHeight: 300, overflow: 'auto' }}>
-            <List component="nav">{renderTreeItem(HIERARCHY_DATA)}</List>
-        </Paper>
-    );
-};
-
-
-// --- COMPONENTE PRINCIPAL DE LA PÁGINA ---
-export default function UbicacionFormPage() {
-    const { id } = useParams(); // Si existe ID, es modo edición
+const UbicacionFormPage = () => {
+    const { id } = useParams();
     const navigate = useNavigate();
-    const isEditMode = !!id;
+    const isEditMode = Boolean(id);
 
-    const [loading, setLoading] = useState(false);
+    // Estado para el formulario
     const [formData, setFormData] = useState({
-        codigo: '', nombre: '', tipo: 'Sector', estado: 'Operativo', idPadre: null
+        codigo: '',
+        nombre: '',
+        tipo: '',
+        estado: 'Operativo', // Valor por defecto basado en tu Enum
+        idPadre: ''
     });
 
+    // Estado para guardar las ubicaciones y llenar el select de "Ubicación Padre"
+    const [ubicacionesDisponibles, setUbicacionesDisponibles] = useState([]);
+
     useEffect(() => {
+        // 1. Cargar TODAS las ubicaciones para el desplegable de "Padre" (Usamos el nuevo getAll)
+        ubicacionService.getAll()
+            // En tus otros métodos de service, devuelves directamente 'response.data', 
+            // así que aquí recibimos la data directamente en 'res', no en 'res.data'
+            .then(data => setUbicacionesDisponibles(data))
+            .catch(err => console.error("Error al cargar ubicaciones disponibles:", err));
+
+        // 2. Si estamos en modo edición, traemos los datos de la ubicación a editar (Usamos getById)
         if (isEditMode) {
-            loadInitialData();
+            ubicacionService.getById(id)
+                .then(data => {
+                    // Mismo caso aquí, el service ya retorna response.data
+                    setFormData({
+                        codigo: data.codigo || '',
+                        nombre: data.nombre || '',
+                        tipo: data.tipo || '',
+                        estado: data.estado || 'Operativo',
+                        idPadre: data.idPadre || '' // Si es null, lo pasamos a string vacío para el select
+                    });
+                })
+                .catch(err => {
+                    console.error("Error al obtener la ubicación:", err);
+                    alert("No se pudo cargar la información de la ubicación.");
+                    navigate('/ubicaciones'); // Lo devolvemos a la lista si falla
+                });
         }
-    }, [id]);
+    }, [id, isEditMode, navigate]);
 
-    const loadInitialData = async () => {
-        setLoading(true);
-        try {
-            const data = await ubicacionService.getById(id);
-            setFormData({ ...data, idPadre: data.idPadre || null });
-        } catch (error) {
-            console.error("Error cargando datos", error);
-            navigate('/ubicaciones');
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Manejador genérico para los inputs del formulario
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = async (e) => {
+    // Manejador del submit (Crear o Actualizar)
+    const handleSubmit = (e) => {
         e.preventDefault();
-        setLoading(true);
-        try {
-            if (isEditMode) {
-                await ubicacionService.update(id, formData);
-            } else {
-                await ubicacionService.create(formData);
-            }
-            navigate('/ubicaciones');
-        } catch (error) {
-            alert(error.response?.data?.message || "Ocurrió un error.");
-        } finally {
-            setLoading(false);
-        }
-    };
 
-    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
+        // Preparamos el payload. Si idPadre está vacío, lo mandamos como null al backend
+        const payload = {
+            ...formData,
+            idPadre: formData.idPadre === '' ? null : parseInt(formData.idPadre)
+        };
+
+        // Usamos update y create
+        const request = isEditMode
+            ? ubicacionService.update(id, payload)
+            : ubicacionService.create(payload);
+
+        request
+            .then(() => {
+                // Si todo sale bien, volvemos al listado
+                navigate('/ubicaciones');
+            })
+            .catch(err => {
+                console.error(err);
+                // Mostramos el mensaje de error que viene del backend (BusinessException o Validation)
+                const errorMsg = err.response?.data?.message || err.response?.data?.error || "Error desconocido al guardar";
+                alert(`Error al guardar: ${errorMsg}`);
+            });
+    };
 
     return (
-        <Box>
-            {/* Cabecera, Breadcrumbs y Título */}
-            <Box sx={{ mb: 4 }}>
-                <Breadcrumbs separator="›" aria-label="breadcrumb" sx={{ mb: 1, color: 'text.secondary' }}>
-                    <Link underline="hover" color="inherit" href="/dashboard">Inicio</Link>
-                    <Link underline="hover" color="inherit" href="/ubicaciones">Ubicaciones</Link>
-                    <Typography color="primary">{isEditMode ? 'Editar' : 'Crear'}</Typography>
-                </Breadcrumbs>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Settings color="primary" sx={{ fontSize: 32 }} />
-                    <Typography variant="h4" fontWeight="bold">
-                        {isEditMode ? 'MODIFICAR UBICACIÓN TÉCNICA' : 'NUEVA UBICACIÓN TÉCNICA'}
-                    </Typography>
-                </Box>
-            </Box>
+        <div className="p-4 max-w-2xl mx-auto mt-6">
+            <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
+                    {isEditMode ? 'Editar Ubicación Técnica' : 'Nueva Ubicación Técnica'}
+                </h2>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    
+                    {/* Fila 1: Código y Estado */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Código</label>
+                            <input 
+                                type="text" 
+                                name="codigo" 
+                                value={formData.codigo} 
+                                onChange={handleChange} 
+                                required 
+                                disabled={isEditMode} // Deshabilitado en edición por seguridad
+                                className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${isEditMode ? 'bg-gray-100' : ''}`}
+                                placeholder="Ej. PLANTA-01"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Estado Operativo</label>
+                            <select 
+                                name="estado" 
+                                value={formData.estado} 
+                                onChange={handleChange} 
+                                required 
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white">
+                                {/* Valores exactos de tu Enum en el Backend */}
+                                <option value="Operativo">Operativo</option>
+                                <option value="EnReparacion">En Reparación</option>
+                                <option value="FueraDeServicio">Fuera de Servicio</option>
+                            </select>
+                        </div>
+                    </div>
 
-            <form onSubmit={handleSubmit}>
-                <Grid container spacing={4}>
-                    {/* Área Principal del Formulario  */}
-                    <Grid size={{ xs: 12, md: 8 }}>
-                        <Paper elevation={0} sx={{ p: 4, border: '1px solid', borderColor: 'divider', borderRadius: 3, bgcolor: 'white' }}>
-                            <Grid container spacing={3}>
-                                <Grid size={{ xs: 12, sm: 6 }}>
-                                    <TextField
-                                        label="Código Técnico" name="codigo" required fullWidth
-                                        value={formData.codigo} onChange={handleChange} disabled={isEditMode}
-                                        helperText="Formato: TNC-ROS-01 (Monospace, Mayúsculas)"
-                                        inputProps={{ style: { fontFamily: 'monospace', textTransform: 'uppercase' }}}
-                                    />
-                                </Grid>
-                                <Grid size={{ xs: 12, sm: 6 }}>
-                                    <TextField label="Nombre de Ubicación" name="nombre" required fullWidth value={formData.nombre} onChange={handleChange} />
-                                </Grid>
-                                <Grid size={{ xs: 12, sm: 6 }}>
-                                    <TextField select label="Tipo de Activo" name="tipo" required fullWidth value={formData.tipo} onChange={handleChange}>
-                                        {[ {v: 'Planta', i: <Business/>}, {v: 'Sector', i: <FolderOpen/>}, {v: 'Línea', i: <PrecisionManufacturing/>}].map(op => (
-                                            <MenuItem key={op.v} value={op.v}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>{op.i} {op.v}</Box>
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                </Grid>
-                                <Grid size={{ xs: 12, sm: 6 }}>
-                                    <TextField select label="Estado Operativo" name="estado" required fullWidth value={formData.estado} onChange={handleChange}>
-                                        {[ {v: 'Operativo', i: '✅'}, {v: 'FueraDeServicio', i: '🔧 Fuera de Servicio'}].map(op => (
-                                            <MenuItem key={op.v} value={op.v}>{op.i}</MenuItem>
-                                        ))}
-                                    </TextField>
-                                </Grid>
+                    {/* Fila 2: Nombre */}
+                    <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">Nombre</label>
+                        <input 
+                            type="text" 
+                            name="nombre" 
+                            value={formData.nombre} 
+                            onChange={handleChange} 
+                            required 
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            placeholder="Ej. Línea de Producción A"
+                        />
+                    </div>
+
+                    {/* Fila 3: Tipo y Ubicación Padre */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Tipo</label>
+                            <input 
+                                type="text" 
+                                name="tipo" 
+                                value={formData.tipo} 
+                                onChange={handleChange} 
+                                required 
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                placeholder="Ej. Sector, Máquina, Edificio"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Ubicación Padre (Opcional)</label>
+                            <select 
+                                name="idPadre" 
+                                value={formData.idPadre} 
+                                onChange={handleChange} 
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white">
+                                <option value="">-- Ninguna (Nodo Raíz) --</option>
                                 
-                                <Divider sx={{ my: 3, gridColumn: 'span 12' }} />
-                                
-                                {/* WIDGET SELECTOR DE JERARQUÍA */}
-                                <Grid size={{ xs: 12 }}>
-                                    <Typography variant="subtitle2" fontWeight="700" textTransform="uppercase" color="text.secondary" sx={{ mb: 1, ml: 1 }}>
-                                        Asignación de Padre
-                                    </Typography>
-                                    <HierarchyTreeWidget 
-                                        data={HIERARCHY_DATA} 
-                                        selectedId={formData.idPadre} 
-                                        onSelect={(id) => setFormData(prev => ({ ...prev, idPadre: id }))}
-                                    />
-                                </Grid>
-                            </Grid>
-                        </Paper>
-                    </Grid>
+                                {ubicacionesDisponibles
+                                    // Filtramos para evitar que una ubicación sea padre de sí misma
+                                    .filter(ubi => !isEditMode || ubi.idUbicacion !== parseInt(id))
+                                    .map(ubi => (
+                                        <option key={ubi.idUbicacion} value={ubi.idUbicacion}>
+                                            {ubi.codigo} - {ubi.nombre}
+                                        </option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+                    </div>
 
-                    {/* Área Lateral de Resumen */}
-                    <Grid size={{ xs: 12, md: 4 }}>
-                        <Card variant="outlined" sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: '#FAFAFBF' }}>
-                            <CardContent sx={{ p: 3 }}>
-                                <Typography variant="h6" fontWeight="bold" gutterBottom>Ayuda de Creación</Typography>
-                                <Typography variant="body2" color="text.secondary" paragraph>
-                                    Defina la jerarquía del activo industrial. Use el widget a la izquierda para navegar y seleccionar la carpeta contenedora.
-                                </Typography>
-                                <Divider sx={{ my: 2 }} />
-                                <Typography variant="subtitle2" color="text.secondary" textTransform="uppercase">ESTADOS:</Typography>
-                                <Typography variant="caption" display="block">✅ <b>Operativo:</b> Activo disponible.</Typography>
-                                <Typography variant="caption" display="block">🔧 <b>Fuera de Servicio:</b> En mantenimiento o baja.</Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                </Grid>
-
-                {/* Pie de página fijo  */}
-                <Paper elevation={3} sx={{ position: 'fixed', bottom: 0, right: 0, width: '100%', bgcolor: 'white', p: 2, pl: '280px', borderTop: '1px solid', borderColor: 'divider' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                        <Button variant="outlined" color="inherit" onClick={() => navigate('/ubicaciones')} disabled={loading}>
-                            CANCELAR
-                        </Button>
-                        <Button type="submit" variant="contained" color="primary" disabled={loading}>
-                            {isEditMode ? 'GUARDAR CAMBIOS' : 'CREAR UBICACIÓN'}
-                        </Button>
-                    </Box>
-                </Paper>
-            </form>
-        </Box>
+                    {/* Fila 4: Botones de Acción */}
+                    <div className="flex items-center justify-end space-x-4 pt-4 mt-6 border-t">
+                        <button 
+                            type="button" 
+                            onClick={() => navigate('/ubicaciones')} 
+                            className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow transition">
+                            Cancelar
+                        </button>
+                        <button 
+                            type="submit" 
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded shadow transition">
+                            Guardar Ubicación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
-}
+};
+
+export default UbicacionFormPage;
