@@ -9,6 +9,9 @@ import Ubicaciones from './pages/Ubicaciones';
 import UbicacionDetalle from './pages/UbicacionDetalle';
 import UbicacionFormPage from './pages/UbicacionFormPage';
 import MainLayout from './components/MainLayout';
+import Equipos from './pages/Equipos';
+import EquipoFormPage from './pages/EquipoFormPage';
+import EquipoDetalle from './pages/EquipoDetalle';
 
 function App() {
   return (
@@ -21,16 +24,20 @@ function App() {
           
           <Route element={<MainLayout />}>
              <Route path="/dashboard" element={<Dashboard />} />
-             <Route path="/ubicaciones" element={<Ubicaciones />} />
              
-             {/* RUTAS ABM EN PÁGINA COMPLETA */} 
+             {/* RUTAS UBICACIONES*/} 
              <Route path="/ubicaciones" element={<Ubicaciones />} />
              <Route path="/ubicaciones/nueva" element={<UbicacionFormPage />} />
              <Route path="/ubicaciones/:id" element={<UbicacionDetalle />} />  
              <Route path="/ubicaciones/editar/:id" element={<UbicacionFormPage />} />
             
+             {/* RUTAS EQUIPOS */}
+             <Route path="/equipos" element={<Equipos />} />
+             <Route path="/equipos/nuevo" element={<EquipoFormPage />} />
+             <Route path="equipos/:id" element={<EquipoDetalle />} />
+             <Route path="/equipos/editar/:id" element={<EquipoFormPage />} />
+             
              {/* Placeholders */}
-             <Route path="/equipos" element={<h2>Gestión de Equipos</h2>} />
              <Route path="/ordenes" element={<h2>Listado de Órdenes</h2>} />
              <Route path="/tareas" element={<h2>Tareas</h2>} />
              <Route path="/reportes" element={<h2>Reportes</h2>} />
