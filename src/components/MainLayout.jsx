@@ -1,43 +1,46 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Toolbar, IconButton, AppBar } from '@mui/material';
+import { Menu as MenuIcon } from '@mui/icons-material';
+import { Outlet } from 'react-router-dom';
+import Sidebar from './Sidebar';
 
-import theme from './theme/theme';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Ubicaciones from './pages/Ubicaciones';
-import UbicacionDetalle from './pages/UbicacionDetalle';
-import UbicacionFormPage from './pages/UbicacionFormPage'; // <-- IMPORT NUEVO
-import MainLayout from './components/MainLayout';
+const DRAWER_WIDTH = 260;
 
-function App() {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          
-          <Route element={<MainLayout />}>
-             <Route path="/dashboard" element={<Dashboard />} />
-             <Route path="/ubicaciones" element={<Ubicaciones />} />
-             
-             {/* RUTAS ABM EN PÁGINA COMPLETA */}
-             <Route path="/ubicaciones/crear" element={<UbicacionFormPage />} /> {/* Alta */}
-             <Route path="/ubicaciones/:id" element={<UbicacionDetalle />} />  {/* Ver */}
-             <Route path="/ubicaciones/:id/editar" element={<UbicacionFormPage />} /> {/* Modificación */}
-             
-             {/* Placeholders */}
-             <Route path="/equipos" element={<h2>Gestión de Equipos</h2>} />
-             <Route path="/ordenes" element={<h2>Listado de Órdenes</h2>} />
-             <Route path="/tareas" element={<h2>Tareas</h2>} />
-             <Route path="/reportes" element={<h2>Reportes</h2>} />
-          </Route>
-        </Routes>
-      </Router>
-    </ThemeProvider>
-  );
+export default function MainLayout() {
+    const [mobileOpen, setMobileOpen] = useState(false);
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
+
+    return (
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F8F9FA' }}>
+            {/* AppBar visible solo en móviles para abrir el menú */}
+            <AppBar 
+                position="fixed" 
+                sx={{ 
+                    width: { lg: `calc(100% - ${DRAWER_WIDTH}px)` }, 
+                    ml: { lg: `${DRAWER_WIDTH}px` },
+                    display: { lg: 'none' },
+                    bgcolor: 'white',
+                    color: 'text.primary',
+                    boxShadow: 1
+                }}
+            >
+                <Toolbar>
+                    <IconButton color="inherit" edge="start" onClick={handleDrawerToggle} sx={{ mr: 2 }}>
+                        <MenuIcon />
+                    </IconButton>
+                </Toolbar>
+            </AppBar>
+
+            <Sidebar mobileOpen={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
+
+            <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, width: { lg: `calc(100% - ${DRAWER_WIDTH}px)` } }}>
+                <Toolbar sx={{ display: { lg: 'none' } }} />
+                {/* Outlet (Dashboard, Detalle, etc.) */}
+                <Outlet /> 
+            </Box>
+        </Box>
+    );
 }
-
-export default App;

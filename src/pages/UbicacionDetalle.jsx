@@ -3,19 +3,18 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
     Box, Typography, Paper, Button, Chip, Divider, Avatar, Card, CardContent, 
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, IconButton,
-    CircularProgress, Accordion, AccordionSummary, AccordionDetails
+    CircularProgress, Accordion, AccordionSummary, AccordionDetails, Grid 
 } from '@mui/material';
 import { 
     ArrowBack, Edit, Business, PrecisionManufacturing, 
-    ViewModule, Place, EventNote, Visibility, AddCircleOutline, ExpandMore 
+    ViewModule, Place, Visibility, AddCircleOutline, ExpandMore, AccountTree
 } from '@mui/icons-material';
 import ubicacionService from '../services/ubicacionService';
 
-// --- MOCK DE EQUIPOS ASOCIADOS (Columnas imagen 1) ---
 const MOCK_EQUIPOS = [
-    { id: 101, tag: 'MOT-BMB-01', nombre: 'Motor Bomba Principal', estado: 'Operativo', durencia: 'Baja' },
-    { id: 102, tag: 'VAL-HID-05', nombre: 'Válvula Hidráulica', estado: 'Operativo', durencia: 'Media' },
-    { id: 103, tag: 'SENS-TMP-02', nombre: 'Sensor de Temperatura', estado: 'FueraDeServicio', durencia: 'Alta' },
+    { id: 101, tag: 'MOT-BMB-01', nombre: 'Motor Bomba Principal', estado: 'Operativo', criticidad: 'Alta' },
+    { id: 102, tag: 'VAL-HID-05', nombre: 'Válvula Hidráulica', estado: 'Operativo', criticidad: 'Media' },
+    { id: 103, tag: 'SENS-TMP-02', nombre: 'Sensor de Temperatura', estado: 'FueraDeServicio', criticidad: 'Alta' },
 ];
 
 export default function UbicacionDetalle() {
@@ -32,13 +31,9 @@ export default function UbicacionDetalle() {
     const loadData = async () => {
         setLoading(true);
         try {
-            // Cargar datos reales de la ubicación
             const dataUbicacion = await ubicacionService.getById(id);
             setUbicacion(dataUbicacion);
-
-            // Simular carga de equipos (vincular luego con equipoService.getByUbicacion(id))
             setEquipos(MOCK_EQUIPOS);
-
         } catch (error) {
             console.error("Error cargando detalle:", error);
             navigate('/ubicaciones'); 
@@ -50,7 +45,6 @@ export default function UbicacionDetalle() {
     if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
     if (!ubicacion) return null;
 
-    // Icono dinámico para el header
     const getIcon = () => {
         switch(ubicacion.tipo) {
             case 'Planta': return <Business fontSize="large" />;
@@ -61,7 +55,6 @@ export default function UbicacionDetalle() {
 
     return (
         <Box>
-            {/* Cabecera Superior con Botón Volver y Nueva Sub-ubicación (Stitch Style) */}
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, justifyContent: 'space-between' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Button startIcon={<ArrowBack />} onClick={() => navigate('/ubicaciones')} sx={{ mr: 2, borderRadius: 2, color: 'text.secondary' }}>
@@ -74,7 +67,6 @@ export default function UbicacionDetalle() {
                 </Button>
             </Box>
 
-            {/* TARJETA DE RESUMEN PRINCIPAL (Cabecera imagen 1) */}
             <Paper elevation={0} sx={{ p: 4, border: '1px solid', borderColor: 'divider', borderRadius: 3, mb: 4, bgcolor: '#ffffff' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ width: 72, height: 72, bgcolor: 'primary.main', mr: 3, boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
@@ -103,11 +95,9 @@ export default function UbicacionDetalle() {
                 <Divider sx={{ my: 3 }} />
 
                 <Grid container spacing={3}>
-                    {/* Grid 2 Columnas (Imagen 1) */}
                     <Grid size={{ xs: 12, md: 6 }}>
                         <Typography variant="subtitle2" fontWeight="700" textTransform="uppercase" color="text.secondary" sx={{ mb: 2 }}>Información General</Typography>
                         
-                        {/* Items tipo acordeón/lista (Imagen 1) */}
                         {[
                             { title: 'ID Sistema', value: ubicacion.idUbicacion, icon: <Place fontSize="small"/> },
                             { title: 'Ubicación Padre', value: ubicacion.idPadre ? `ID: ${ubicacion.idPadre}` : 'Nivel Raíz', icon: <AccountTree fontSize="small"/> },
@@ -124,7 +114,6 @@ export default function UbicacionDetalle() {
                         ))}
                     </Grid>
                     
-                    {/* Datos Operativos (Métrica Chips Imagen 1) */}
                     <Grid size={{ xs: 12, md: 6 }}>
                         <Typography variant="subtitle2" fontWeight="700" textTransform="uppercase" color="text.secondary" sx={{ mb: 2 }}>Datos de Operación (Proyección)</Typography>
                         <Grid container spacing={2}>
@@ -141,7 +130,6 @@ export default function UbicacionDetalle() {
                 </Grid>
             </Paper>
 
-            {/* --- SECCIÓN NUEVA: TABLA DE EQUIPOS ASOCIADOS (Tabla imagen 1) --- */}
             <Box sx={{ mb: 4 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
                     <Typography variant="h6" fontWeight="bold">Equipos Asociados</Typography>
@@ -155,8 +143,8 @@ export default function UbicacionDetalle() {
                         <TableHead sx={{ bgcolor: '#FAFAFA' }}>
                             <TableRow>
                                 <TableCell fontWeight="600">CÓDIGO 700</TableCell>
-                                <TableCell fontWeight="600">TIPO</TableCell>
-                                <TableCell fontWeight="600">DEPENDENCIA 700</TableCell>
+                                <TableCell fontWeight="600">NOMBRE DEL EQUIPO</TableCell>
+                                <TableCell fontWeight="600">CRITICIDAD</TableCell>
                                 <TableCell fontWeight="600">ESTADO 700</TableCell>
                                 <TableCell fontWeight="600" align="right">ACCIONES</TableCell>
                             </TableRow>
@@ -168,7 +156,12 @@ export default function UbicacionDetalle() {
                                 <TableRow key={eq.id} hover>
                                     <TableCell sx={{ fontFamily: 'monospace', fontWeight: 600 }}>{eq.tag}</TableCell>
                                     <TableCell sx={{ fontWeight: 500 }}>{eq.nombre}</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>{ubicacion.codigo}</TableCell>
+                                    <TableCell>
+                                        <Chip label={eq.criticidad} size="small" 
+                                            color={eq.criticidad === 'Alta' ? 'error' : eq.criticidad === 'Media' ? 'warning' : 'default'} 
+                                            variant="outlined" sx={{ fontWeight: 'bold' }} 
+                                        />
+                                    </TableCell>
                                     <TableCell>
                                         <Chip label={eq.estado === 'Operativo' ? 'OPERATIVO' : 'FUERA DE SERVICIO'} size="small" 
                                               color={eq.estado === 'Operativo' ? 'success' : 'warning'} 
