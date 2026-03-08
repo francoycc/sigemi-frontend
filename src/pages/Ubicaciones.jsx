@@ -5,7 +5,7 @@ import {
     IconButton, Tooltip, CircularProgress, Avatar
 } from '@mui/material';
 import { 
-    Add, Edit, FolderOpen, AccountTree, Delete
+    Add, Edit, FolderOpen, AccountTree, Delete, Visibility
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import ubicacionService from '../services/ubicacionService';
@@ -18,18 +18,14 @@ export default function Ubicaciones() {
     const [path, setPath] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Envolvemos loadView en useCallback para poder usarlo como dependencia en useEffect sin causar renders infinitos
     const loadView = useCallback(async (id) => {
-        console.log("Cargando vista para ID:", id);
         setLoading(true);
         try {
             const data = await ubicacionService.getByParentId(id);
             setChildren(data);
             if (id === null) {
-                console.log("Cargando raíz, limpiando path");
                 setPath([]);
             } else {
-                console.log("Cargando nodo, actualizando path");
                 const currentNode = await ubicacionService.getById(id);
                 setPath(prev => {
                     const existingIndex = prev.findIndex(p => p.idUbicacion === id);
@@ -43,7 +39,6 @@ export default function Ubicaciones() {
         } catch (error) {
             console.error("Error cargando jerarquía", error);
         } finally {
-            console.log("Carga de vista finalizada");
             setLoading(false);
         }
     }, []);
@@ -55,7 +50,6 @@ export default function Ubicaciones() {
     const handleNavigate = (id) => setCurrentId(id);
 
     const handleDelete = async (id, nombre) => {
-        console.log(`Eliminar ubicación ID ${id} con nombre "${nombre}"`);
         if (window.confirm(`¿Estás seguro que deseas dar de baja: ${nombre}?`)) {
             try {
                 await ubicacionService.remove(id);
@@ -80,7 +74,6 @@ export default function Ubicaciones() {
                         <Typography variant="body2" color="text.secondary">Navegue por la jerarquía de plantas y sectores.</Typography>
                     </Box>
                 </Box>
-                {/* Navegamos directamente a la nueva página de creación */}
                 <Button variant="contained" startIcon={<Add />} sx={{ px: 3, borderRadius: 2 }}
                     onClick={() => navigate('/ubicaciones/nueva')}
                 >
@@ -124,12 +117,19 @@ export default function Ubicaciones() {
                                               variant="outlined" sx={{ fontWeight: 600 }} />
                                     </TableCell>
                                     <TableCell align="right">
-                                        {/* Botón para Editar navegando a la página con el ID */}
+                                        {/* Botón Restaurado: Ver Detalle */}
+                                        <Tooltip title="Ver Detalle">
+                                            <IconButton size="small" color="info" onClick={() => navigate(`/ubicaciones/${row.idUbicacion}`)}>
+                                                <Visibility fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                        
                                         <Tooltip title="Editar">
                                             <IconButton size="small" color="primary" onClick={() => navigate(`/ubicaciones/editar/${row.idUbicacion}`)}>
                                                 <Edit fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
+                                        
                                         <Tooltip title="Dar de Baja">
                                             <IconButton size="small" color="error" onClick={() => handleDelete(row.idUbicacion, row.nombre)}>
                                                 <Delete fontSize="small" />
