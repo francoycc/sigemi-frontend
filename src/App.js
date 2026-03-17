@@ -19,7 +19,7 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} /> 
           <Route path="/login" element={<Login />} />
           
           <Route element={<MainLayout />}>
@@ -30,13 +30,13 @@ function App() {
              <Route path="/ubicaciones/nueva" element={<UbicacionFormPage />} />
              <Route path="/ubicaciones/:id" element={<UbicacionDetalle />} />  
              <Route path="/ubicaciones/editar/:id" element={<UbicacionFormPage />} />
-            
+             <Route path="/ubicaciones/:id/equipos" element={<Equipos />} />
              {/* RUTAS EQUIPOS */}
              <Route path="/equipos" element={<Equipos />} />
              <Route path="/equipos/nuevo" element={<EquipoFormPage />} />
              <Route path="equipos/:id" element={<EquipoDetalle />} />
              <Route path="/equipos/editar/:id" element={<EquipoFormPage />} />
-             
+             <Route path="/equipos/ubicacion/:idUbicacion" element={<Equipos />} />
              {/* Placeholders */}
              <Route path="/ordenes" element={<h2>Listado de Órdenes</h2>} />
              <Route path="/tareas" element={<h2>Tareas</h2>} />

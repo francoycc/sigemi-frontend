@@ -25,6 +25,16 @@ const getById = async (id) => {
     }
 };
 
+const getByUbicacion = async (idUbicacion) => {
+    try {
+        const response = await axios.get(`${API_URL}/ubicacion/${idUbicacion}`);
+        return response.data;
+    } catch (error) {
+        console.error(`[EquipoService] Error obteniendo equipos para ubicación ${idUbicacion}:`, error);
+        throw error;
+    }
+};
+
 const create = async (equipoData) => {
     try {
         console.log(`[EquipoService] Creando nuevo equipo:`, equipoData);
@@ -61,6 +71,7 @@ const remove = async (id) => {
 const equipoService = {
     getAll,
     getById,
+    getByUbicacion,
     create,
     update,
     remove
