@@ -19,34 +19,36 @@ export default function EquipoFormPage() {
     const [formData, setFormData] = useState({
         codigoEquipo: '',
         nombre: '',
+        tipo: '',              
         marca: '',
         modelo: '',
         numeroSerie: '',
         fechaIncorporacion: '',
+        frecuencia: '',        
+        observaciones: '',     
         estadoOperativo: 'Operativo',
         criticidad: 'Media',
-        ubicacionTecnicaId: '' // FK hacia Ubicación Técnica
+        ubicacionTecnicaId: '' 
     });
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                // cargar equipos
-                console.log("Cargando datos para el formulario de equipo...");
                 const ubiData = await ubicacionService.getAll();
                 setUbicaciones(ubiData);
 
-                // Editar
                 if (isEditMode) {
-                    console.log(`Cargando datos del equipo ID ${id} para edición...`);
                     const data = await equipoService.getById(id);
                     setFormData({
                         codigoEquipo: data.codigoEquipo || '',
                         nombre: data.nombre || '',
+                        tipo: data.tipo || '',
                         marca: data.marca || '',
                         modelo: data.modelo || '',
                         numeroSerie: data.numeroSerie || '',
-                        fechaIncorporacion: data.fechaIncorporacion ? data.fechaIncorporacion.split('T')[0] : '', // Formato input date
+                        fechaIncorporacion: data.fechaIncorporacion ? data.fechaIncorporacion.split('T')[0] : '',
+                        frecuencia: data.frecuencia || '',
+                        observaciones: data.observaciones || '',
                         estadoOperativo: data.estadoOperativo || 'Operativo',
                         criticidad: data.criticidad || 'Media',
                         ubicacionTecnicaId: data.ubicacionTecnica?.idUbicacion || ''
@@ -75,16 +77,16 @@ export default function EquipoFormPage() {
 
         const payload = {
             ...formData,
-            // Aseguramos de mandar null 
-            ubicacionTecnica: formData.ubicacionTecnicaId ? { idUbicacion: parseInt(formData.ubicacionTecnicaId) } : null
+            // Parseo de la frecuencia
+            frecuencia: formData.frecuencia === '' ? null : parseInt(formData.frecuencia),
+            // Manejo correcto de la FK hacia Ubicación
+            ubicacionTecnicaId: formData.ubicacionTecnicaId === '' ? null : parseInt(formData.ubicacionTecnicaId)
         };
 
         try {
             if (isEditMode) {
-                console.log(`Guardando cambios para equipo ID ${id}...`);
                 await equipoService.update(id, payload);
             } else {
-                console.log("Creando nuevo equipo...");
                 await equipoService.create(payload);
             }
             navigate('/equipos'); 
@@ -158,6 +160,15 @@ export default function EquipoFormPage() {
                             />
                         </Grid>
 
+                        {/* INPUT FALTANTE AGREGADO */}
+                        <Grid item xs={12} sm={4}>
+                            <TextField
+                                fullWidth label="Tipo de Equipo" name="tipo" value={formData.tipo}
+                                onChange={handleChange} required placeholder="Ej. Motor, Bomba, Compresor"
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            />
+                        </Grid>
+
                         <Grid item xs={12} sm={4}>
                             <TextField
                                 fullWidth label="Marca" name="marca" value={formData.marca}
@@ -172,10 +183,19 @@ export default function EquipoFormPage() {
                             />
                         </Grid>
 
-                        <Grid item xs={12} sm={4}>
+                        <Grid item xs={12} sm={6}>
                             <TextField
                                 fullWidth label="Número de Serie" name="numeroSerie" value={formData.numeroSerie}
                                 onChange={handleChange} required
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                fullWidth type="number" label="Frecuencia Mantenimiento (Días)" name="frecuencia" value={formData.frecuencia}
+                                onChange={handleChange} placeholder="Ej. 30"
+                                helperText="Cada cuántos días requiere revisión."
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                             />
                         </Grid>
@@ -232,6 +252,14 @@ export default function EquipoFormPage() {
                                 <MenuItem value="Media">Media</MenuItem>
                                 <MenuItem value="Alta">Alta</MenuItem>
                             </TextField>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth multiline rows={3} label="Observaciones" name="observaciones" value={formData.observaciones}
+                                onChange={handleChange} placeholder="Detalles técnicos adicionales, notas sobre el equipo, etc."
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            />
                         </Grid>
                     </Grid>
 
