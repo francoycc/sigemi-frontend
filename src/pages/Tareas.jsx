@@ -5,7 +5,7 @@ import {
     IconButton, Tooltip, CircularProgress, Avatar, Breadcrumbs, Link
 } from '@mui/material';
 import { 
-    Add, Edit, Delete, Assignment, Dashboard as DashboardIcon, Build
+    Add, Edit, Delete, Assignment, Dashboard as DashboardIcon, Person, ConfirmationNumber
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import tareaService from '../services/tareaService';
@@ -16,7 +16,6 @@ export default function Tareas() {
     const [loading, setLoading] = useState(true);
 
     const cargarTareas = async () => {
-        console.log("Cargando tareas...");
         setLoading(true);
         try {
             const data = await tareaService.getAll();
@@ -33,7 +32,6 @@ export default function Tareas() {
     }, []);
 
     const handleDelete = async (id) => {
-        console.log(`Intentando eliminar tarea ${id}...`);
         if (window.confirm('¿Eliminar definitivamente esta tarea?')) {
             try {
                 await tareaService.remove(id);
@@ -70,8 +68,8 @@ export default function Tareas() {
                         <Assignment fontSize="large" />
                     </Avatar>
                     <Box>
-                        <Typography variant="h4" fontWeight="800">Tareas de Mantenimiento</Typography>
-                        <Typography variant="body1" color="text.secondary">Gestión y seguimiento de trabajos técnicos.</Typography>
+                        <Typography variant="h4" fontWeight="800">Ejecución de Tareas</Typography>
+                        <Typography variant="body1" color="text.secondary">Seguimiento de actividades asignadas a los técnicos.</Typography>
                     </Box>
                 </Box>
                 <Button 
@@ -85,35 +83,52 @@ export default function Tareas() {
 
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden' }}>
                 <TableContainer>
-                    <Table sx={{ minWidth: 700 }}>
+                    <Table sx={{ minWidth: 800 }}>
                         <TableHead sx={{ bgcolor: '#FAFAFA' }}>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>TÍTULO DE LA TAREA</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>TÍTULO</TableCell>
                                 <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>TIPO</TableCell>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>EQUIPO ASOCIADO</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>ORDEN ASIGNADA</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>TÉCNICO</TableCell>
                                 <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>ESTADO</TableCell>
                                 <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary' }}>ACCIONES</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {loading ? (
-                                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 5 }}><CircularProgress /></TableCell></TableRow>
+                                <TableRow><TableCell colSpan={6} align="center" sx={{ py: 5 }}><CircularProgress /></TableCell></TableRow>
                             ) : tareas.length === 0 ? (
-                                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>No hay tareas registradas.</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>No hay tareas registradas.</TableCell></TableRow>
                             ) : tareas.map((t) => (
                                 <TableRow key={t.idTarea} hover>
                                     <TableCell sx={{ fontWeight: 600 }}>{t.nombre}</TableCell>
                                     <TableCell>{t.tipoMantenimiento}</TableCell>
+                                    
+                                    {/* Mapeo de la Orden */}
                                     <TableCell>
-                                        {t.equipo ? (
-                                            <Chip icon={<Build fontSize="small" />} label={t.equipo.codigoEquipo} size="small" variant="outlined" />
+                                        {t.orden ? (
+                                            <Chip icon={<ConfirmationNumber fontSize="small" />} label={`Orden #${t.orden.idOrden}`} size="small" variant="outlined" color="primary" />
                                         ) : (
-                                            <Typography variant="body2" color="text.disabled">Sin asignar</Typography>
+                                            <Typography variant="body2" color="text.disabled" fontStyle="italic">Sin asignar</Typography>
                                         )}
                                     </TableCell>
+
+                                    {/* Mapeo del Técnico */}
+                                    <TableCell>
+                                        {t.usuario ? (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Person fontSize="small" color="action" />
+                                                <Typography variant="body2" fontWeight="500">{t.usuario.username || 'Técnico'}</Typography>
+                                            </Box>
+                                        ) : (
+                                            <Typography variant="body2" color="text.disabled" fontStyle="italic">No asignado</Typography>
+                                        )}
+                                    </TableCell>
+
                                     <TableCell>
                                         <Chip label={t.estadoTarea} size="small" color={getEstadoColor(t.estadoTarea)} sx={{ fontWeight: 'bold' }} />
                                     </TableCell>
+                                    
                                     <TableCell align="right">
                                         <Tooltip title="Editar Tarea">
                                             <IconButton size="small" color="primary" onClick={() => navigate(`/tareas/editar/${t.idTarea}`)}>
