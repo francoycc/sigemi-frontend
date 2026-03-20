@@ -12,6 +12,8 @@ import MainLayout from './components/MainLayout';
 import Equipos from './pages/Equipos';
 import EquipoFormPage from './pages/EquipoFormPage';
 import EquipoDetalle from './pages/EquipoDetalle';
+import Tareas from './pages/Tareas';
+import TareaFormPage from './pages/TareaFormPage';
 
 function App() {
   return (
@@ -39,7 +41,9 @@ function App() {
              <Route path="/equipos/ubicacion/:idUbicacion" element={<Equipos />} />
              {/* Placeholders */}
              <Route path="/ordenes" element={<h2>Listado de Órdenes</h2>} />
-             <Route path="/tareas" element={<h2>Tareas</h2>} />
+             <Route path="/tareas" element={<Tareas />} />
+            <Route path="/tareas/nueva" element={<TareaFormPage />} />
+            <Route path="/tareas/editar/:id" element={<TareaFormPage />} />
              <Route path="/reportes" element={<h2>Reportes</h2>} />
           </Route>
         </Routes>
