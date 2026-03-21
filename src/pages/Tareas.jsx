@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Box, Typography, Paper, Button, Table, TableBody, 
     TableCell, TableContainer, TableHead, TableRow, Chip, 
-    IconButton, Tooltip, CircularProgress, Avatar, Breadcrumbs, Link, TextField, Autocomplete, Grid
+    IconButton, Tooltip, CircularProgress, Avatar, Breadcrumbs, Link, TextField, Autocomplete, Grid, MenuItem
 } from '@mui/material';
 import { 
     Add, Edit, Delete, Assignment, Dashboard as DashboardIcon, Person, ConfirmationNumber
@@ -88,6 +88,7 @@ export default function Tareas() {
             case 'EnProgreso': return 'info';
             case 'Completada': return 'success';
             case 'Cancelada': return 'error';
+            case 'Pausada': return 'warning';
             default: return 'default';
         }
     };
@@ -151,6 +152,7 @@ export default function Tareas() {
                             <MenuItem value="EnProgreso">En Progreso</MenuItem>
                             <MenuItem value="Completada">Completada</MenuItem>
                             <MenuItem value="Cancelada">Cancelada</MenuItem>
+                            <MenuItem value="Pausada">Cancelada</MenuItem>
                         </TextField>
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>
