@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-    Box, Typography, Paper, Button, TextField, MenuItem, Grid, Avatar, Divider, CircularProgress, Breadcrumbs, Link
+    Box, Typography, Paper, Button, TextField, MenuItem, Grid, Avatar, CircularProgress, Breadcrumbs, Link
 } from '@mui/material';
 import { Save, ArrowBack, AssignmentTurnedIn, Assignment, Dashboard as DashboardIcon } from '@mui/icons-material';
 import tareaService from '../services/tareaService';
-// Importamos los servicios necesarios para llenar los selectores
-import ordenService from '../services/usuarioService';
+import ordenService from '../services/ordenService';
 import usuarioService from '../services/usuarioService';
 
 export default function TareaFormPage() {
@@ -16,55 +15,49 @@ export default function TareaFormPage() {
 
     const [loading, setLoading] = useState(true); 
     const [saving, setSaving] = useState(false);        
-    
-    // Estados para poblar los selectores
     const [ordenes, setOrdenes] = useState([]);
     const [tecnicos, setTecnicos] = useState([]);
     
+    // Mapeo exacto a tu entidad backend
     const [formData, setFormData] = useState({
-        nombre: '',
+        tipo: 'Preventivo',
         descripcion: '',
-        tipoMantenimiento: 'Preventivo',
-        estadoTarea: 'Pendiente',
-        tiempoEstimado: '',
-        ordenId: '',   // Relación con OrdenMantenimiento
-        usuarioId: ''  // Relación con Usuario (Técnico)
+        fechaEjecucion: '',
+        estado: 'Pendiente',
+        tiempoInvertidoHoras: '',
+        ordenId: '',   
+        tecnicoId: ''  
     });
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                // Cargar catálogos en paralelo para optimizar la carga
                 const [ordData, usrData] = await Promise.all([
                     ordenService.getAll(),
-                    usuarioService.getAll() // Idealmente tu backend podría tener un getAllTecnicos()
+                    usuarioService.getAll() 
                 ]);
-                
                 setOrdenes(ordData);
                 setTecnicos(usrData);
 
-                // Si es edición, mapeamos los datos de la tarea existente
                 if (isEditMode) {
                     const data = await tareaService.getById(id);
                     setFormData({
-                        nombre: data.nombre || '',
+                        tipo: data.tipo || 'Preventivo',
                         descripcion: data.descripcion || '',
-                        tipoMantenimiento: data.tipoMantenimiento || 'Preventivo',
-                        estadoTarea: data.estadoTarea || 'Pendiente',
-                        tiempoEstimado: data.tiempoEstimado || '',
+                        fechaEjecucion: data.fechaEjecucion ? data.fechaEjecucion.split('T')[0] : '',
+                        estado: data.estado || 'Pendiente',
+                        tiempoInvertidoHoras: data.tiempoInvertidoHoras || '',
                         ordenId: data.orden?.idOrden || '',
-                        usuarioId: data.usuario?.idUsuario || ''
+                        tecnicoId: data.tecnico?.idUsuario || ''
                     });
                 }
             } catch (err) {
-                console.error("Error cargando dependencias:", err);
                 alert("Error al cargar la información requerida.");
                 navigate('/tareas');
             } finally {
                 setLoading(false);
             }
         };
-
         fetchInitialData();
     }, [id, isEditMode, navigate]);
 
@@ -77,12 +70,11 @@ export default function TareaFormPage() {
         e.preventDefault();
         setSaving(true);
 
-        // Parseo seguro para el backend
         const payload = {
             ...formData,
-            tiempoEstimado: formData.tiempoEstimado === '' ? null : parseInt(formData.tiempoEstimado),
+            tiempoInvertidoHoras: formData.tiempoInvertidoHoras === '' ? null : parseFloat(formData.tiempoInvertidoHoras),
             ordenId: formData.ordenId === '' ? null : parseInt(formData.ordenId),
-            usuarioId: formData.usuarioId === '' ? null : parseInt(formData.usuarioId)
+            tecnicoId: formData.tecnicoId === '' ? null : parseInt(formData.tecnicoId)
         };
 
         try {
@@ -93,9 +85,8 @@ export default function TareaFormPage() {
             }
             navigate('/tareas'); 
         } catch (err) {
-            console.error(err);
             const errorMsg = err.response?.data?.message || "Verifique los campos ingresados.";
-            alert(`Error al guardar la tarea: ${errorMsg}`);
+            alert(`Error al guardar: ${errorMsg}`);
             setSaving(false);
         }
     };
@@ -108,7 +99,7 @@ export default function TareaFormPage() {
         <Box sx={{ maxWidth: 900, mx: 'auto', p: 1 }}>
             
             <Breadcrumbs sx={{ mb: 3 }}>
-                <Link underline="hover" color="inherit" onClick={() => navigate('/dashboard')} sx={{ cursor: 'pointer' }}>
+                <Link underline="hover" color="inherit" onClick={() => navigate('/dashboard')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <DashboardIcon sx={{ mr: 0.5 }} fontSize="inherit" /> Dashboard
                 </Link>
                 <Link underline="hover" color="inherit" onClick={() => navigate('/tareas')} sx={{ cursor: 'pointer' }}>
@@ -125,105 +116,43 @@ export default function TareaFormPage() {
                 </Avatar>
                 <Box>
                     <Typography variant="h4" fontWeight="800" color="text.primary">
-                        {isEditMode ? 'Modificar Tarea' : 'Registrar Nueva Tarea'}
+                        {isEditMode ? 'Modificar Tarea' : 'Creación de Tarea'}
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
-                        Desglose operativo de la orden de mantenimiento.
+                        Especifique los detalles de ejecución e imputación de tiempos.
                     </Typography>
                 </Box>
             </Box>
 
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: { xs: 3, md: 5 }, bgcolor: '#FFFFFF' }}>
                 <Box component="form" onSubmit={handleSubmit} noValidate>
-                    
-                    <Typography variant="overline" color="text.secondary" fontWeight="700" sx={{ mb: 2, display: 'block' }}>
-                        DETALLES DE LA ACTIVIDAD
-                    </Typography>
-                    
-                    <Grid container spacing={3} sx={{ mb: 4 }}>
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth label="Título de la Tarea" name="nombre" value={formData.nombre}
-                                onChange={handleChange} required placeholder="Ej. Cambio de rodamientos del motor"
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                            />
-                        </Grid>
-
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth multiline rows={3} label="Descripción del Trabajo" name="descripcion" 
-                                value={formData.descripcion} onChange={handleChange} required
-                                placeholder="Describa los pasos a seguir de forma detallada."
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                            />
-                        </Grid>
-                        
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth select label="Tipo de Mantenimiento" name="tipoMantenimiento" 
-                                value={formData.tipoMantenimiento} onChange={handleChange} required
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                            >
-                                <MenuItem value="Preventivo">Preventivo (Programado)</MenuItem>
-                                <MenuItem value="Correctivo">Correctivo (Reparación)</MenuItem>
-                                <MenuItem value="Predictivo">Predictivo (Inspección)</MenuItem>
-                            </TextField>
-                        </Grid>
-
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth type="number" label="Tiempo Estimado (Minutos)" name="tiempoEstimado" 
-                                value={formData.tiempoEstimado} onChange={handleChange}
-                                placeholder="Ej. 120"
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                            />
-                        </Grid>
-                    </Grid>
-
-                    <Divider sx={{ mb: 4 }} />
-                    <Typography variant="overline" color="text.secondary" fontWeight="700" sx={{ mb: 2, display: 'block' }}>
-                        ASIGNACIÓN Y ESTADO
-                    </Typography>
-
                     <Grid container spacing={3}>
-                        {/* Selector de Orden de Mantenimiento */}
-                        <Grid item xs={12} sm={6}>
+                        
+                        <Grid item xs={12} sm={4}>
                             <TextField
-                                fullWidth select label="Vincular a Orden" name="ordenId" 
-                                value={formData.ordenId} onChange={handleChange} required
-                                helperText="Orden de Mantenimiento padre"
+                                fullWidth select label="Tipo de Mantenimiento" name="tipo" 
+                                value={formData.tipo} onChange={handleChange} required
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                             >
-                                <MenuItem value=""><em>-- Seleccione una Orden --</em></MenuItem>
-                                {ordenes.map(ord => (
-                                    <MenuItem key={ord.idOrden} value={ord.idOrden}>
-                                        Orden #{ord.idOrden} - {ord.estadoOrden}
-                                    </MenuItem>
-                                ))}
+                                <MenuItem value="Preventivo">Preventivo</MenuItem>
+                                <MenuItem value="Correctivo">Correctivo</MenuItem>
+                                <MenuItem value="Predictivo">Predictivo</MenuItem>
                             </TextField>
                         </Grid>
 
-                        {/* Selector de Técnico */}
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12} sm={4}>
                             <TextField
-                                fullWidth select label="Técnico Asignado" name="usuarioId" 
-                                value={formData.usuarioId} onChange={handleChange} required
-                                helperText="Persona responsable de la ejecución"
+                                fullWidth type="date" label="Fecha de Ejecución" name="fechaEjecucion" 
+                                value={formData.fechaEjecucion} onChange={handleChange} required
+                                InputLabelProps={{ shrink: true }}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                            >
-                                <MenuItem value=""><em>-- Seleccione un Técnico --</em></MenuItem>
-                                {tecnicos.map(tec => (
-                                    <MenuItem key={tec.idUsuario} value={tec.idUsuario}>
-                                        {tec.username} ({tec.rol})
-                                    </MenuItem>
-                                ))}
-                            </TextField>
+                            />
                         </Grid>
 
-                        <Grid item xs={12}>
+                        <Grid item xs={12} sm={4}>
                             <TextField
-                                fullWidth select label="Estado Actual de la Tarea" name="estadoTarea" 
-                                value={formData.estadoTarea} onChange={handleChange} required
+                                fullWidth select label="Estado de la Tarea" name="estado" 
+                                value={formData.estado} onChange={handleChange} required
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                             >
                                 <MenuItem value="Pendiente">Pendiente</MenuItem>
@@ -231,6 +160,55 @@ export default function TareaFormPage() {
                                 <MenuItem value="Completada">Completada</MenuItem>
                                 <MenuItem value="Cancelada">Cancelada</MenuItem>
                             </TextField>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth multiline rows={4} label="Descripción del Trabajo" name="descripcion" 
+                                value={formData.descripcion} onChange={handleChange} required
+                                placeholder="Detalle los procedimientos a ejecutar o ejecutados..."
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            />
+                        </Grid>
+                        
+                        <Grid item xs={12} sm={5}>
+                            <TextField
+                                fullWidth select label="Vincular a Orden" name="ordenId" 
+                                value={formData.ordenId} onChange={handleChange} required
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            >
+                                <MenuItem value=""><em>-- Seleccione --</em></MenuItem>
+                                {ordenes.map(ord => (
+                                    <MenuItem key={ord.idOrden} value={ord.idOrden}>
+                                        #{ord.codigoOrden} - {ord.estado}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+
+                        <Grid item xs={12} sm={4}>
+                            <TextField
+                                fullWidth select label="Técnico Responsable" name="tecnicoId" 
+                                value={formData.tecnicoId} onChange={handleChange} required
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            >
+                                <MenuItem value=""><em>-- Seleccione --</em></MenuItem>
+                                {tecnicos.map(tec => (
+                                    <MenuItem key={tec.idUsuario} value={tec.idUsuario}>
+                                        {tec.username}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+
+                        <Grid item xs={12} sm={3}>
+                            <TextField
+                                fullWidth type="number" inputProps={{ step: "0.5" }} 
+                                label="Tiempo Invertido (Hs)" name="tiempoInvertidoHoras" 
+                                value={formData.tiempoInvertidoHoras} onChange={handleChange}
+                                placeholder="Ej. 2.5"
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            />
                         </Grid>
                     </Grid>
 
@@ -248,7 +226,7 @@ export default function TareaFormPage() {
                             disabled={saving}
                             sx={{ borderRadius: 2, px: 4, fontWeight: 'bold' }}
                         >
-                            {saving ? 'Guardando...' : 'Confirmar Tarea'}
+                            {saving ? 'Guardando...' : 'Guardar Tarea'}
                         </Button>
                     </Box>
                 </Box>
