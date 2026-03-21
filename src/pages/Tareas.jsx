@@ -5,7 +5,8 @@ import {
     IconButton, Tooltip, CircularProgress, Avatar, Breadcrumbs, Link, TextField, Autocomplete, Grid, MenuItem
 } from '@mui/material';
 import { 
-    Add, Edit, Delete, Assignment, Dashboard as DashboardIcon, Person, ConfirmationNumber
+    Add, Edit, Delete, Assignment, Dashboard as DashboardIcon, Person, ConfirmationNumber,
+    CalendarMonth, Build, QueryStats, Settings, Visibility
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import tareaService from '../services/tareaService';
@@ -45,7 +46,7 @@ export default function Tareas() {
         cargarDatos();
     }, []);
 
-    // Lógica de filtrado dinámico
+    // Lógica de filtrado en React
     const aplicarFiltros = useCallback(() => {
         let tempTareas = [...tareas];
 
@@ -80,6 +81,7 @@ export default function Tareas() {
         }
     };
 
+    // Helpers visuales
     const pendingTasksCount = tareas.filter(t => t.estado === 'Pendiente').length;
 
     const getEstadoColor = (estado) => {
@@ -88,14 +90,23 @@ export default function Tareas() {
             case 'EnProgreso': return 'info';
             case 'Completada': return 'success';
             case 'Cancelada': return 'error';
-            case 'Pausada': return 'warning';
             default: return 'default';
         }
     };
 
+    const getTipoIcon = (tipo) => {
+        switch (tipo) {
+            case 'Preventivo': return <CalendarMonth fontSize="small" color="info" />;
+            case 'Correctivo': return <Build fontSize="small" color="error" />;
+            case 'Predictivo': return <QueryStats fontSize="small" color="secondary" />;
+            default: return <Settings fontSize="small" color="action" />;
+        }
+    };
+
     return (
-        <Box sx={{ maxWidth: 1200, mx: 'auto', p: 1 }}>
+        <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 2, md: 3 } }}>
             
+            {/* Navegación Breadcrumbs */}
             <Breadcrumbs sx={{ mb: 3 }}>
                 <Link underline="hover" color="inherit" onClick={() => navigate('/dashboard')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <DashboardIcon sx={{ mr: 0.5 }} fontSize="inherit" /> Dashboard
@@ -103,133 +114,191 @@ export default function Tareas() {
                 <Typography color="text.primary" fontWeight="bold">Tareas Técnicas</Typography>
             </Breadcrumbs>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            {/* Cabecera Estilo Stitch */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, mb: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ bgcolor: 'info.light', color: 'info.main', width: 56, height: 56 }} variant="rounded">
+                    <Avatar sx={{ bgcolor: 'info.light', color: 'info.main', width: 56, height: 56, boxShadow: 1 }} variant="rounded">
                         <Assignment fontSize="large" />
                     </Avatar>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Typography variant="h4" fontWeight="800">Mantenimiento</Typography>
-                        {pendingTasksCount > 0 && (
-                            <Chip label={`${pendingTasksCount} Pendientes`} size="small" color="info" sx={{ fontWeight: 'bold', borderRadius: 1.5 }} />
-                        )}
+                    <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Typography variant="h4" fontWeight="800" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>Tareas Técnicas</Typography>
+                            {pendingTasksCount > 0 && (
+                                <Chip 
+                                    label={`${pendingTasksCount} Pendientes`} 
+                                    size="small" 
+                                    color="info" 
+                                    sx={{ fontWeight: 'bold', borderRadius: 2 }} 
+                                />
+                            )}
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" fontWeight="500">Gestión y seguimiento de trabajos de mantenimiento.</Typography>
                     </Box>
                 </Box>
                 <Button 
                     variant="contained" color="info" startIcon={<Add />} 
-                    sx={{ px: 3, py: 1.5, borderRadius: 2, fontWeight: 'bold' }}
+                    sx={{ px: 3, py: 1.2, borderRadius: 2, fontWeight: 'bold', boxShadow: 2 }}
                     onClick={() => navigate('/tareas/nueva')}
                 >
                     Nueva Tarea
                 </Button>
             </Box>
 
-            {/* BARRA DE FILTROS */}
+            {/* Fila de Filtros Estilo Stitch */}
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 3, mb: 3, bgcolor: '#FFFFFF' }}>
-                <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} sm={6} md={2.5}>
-                        <TextField
-                            fullWidth type="date" label="Ejecución Desde" value={fechaDesde}
-                            onChange={(e) => setFechaDesde(e.target.value)} InputLabelProps={{ shrink: true }}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2.5}>
-                        <TextField
-                            fullWidth type="date" label="Ejecución Hasta" value={fechaHasta}
-                            onChange={(e) => setFechaHasta(e.target.value)} InputLabelProps={{ shrink: true }}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                        />
-                    </Grid>
+                <Grid container spacing={2}>
                     <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                            Fecha Desde
+                        </Typography>
                         <TextField
-                            fullWidth select label="Estado" value={estadoFiltro} 
+                            fullWidth type="date" value={fechaDesde} size="small"
+                            onChange={(e) => setFechaDesde(e.target.value)} InputLabelProps={{ shrink: true }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
+                        />
+                    </Grid>
+                    
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                            Fecha Hasta
+                        </Typography>
+                        <TextField
+                            fullWidth type="date" value={fechaHasta} size="small"
+                            onChange={(e) => setFechaHasta(e.target.value)} InputLabelProps={{ shrink: true }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
+                        />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                            Estado
+                        </Typography>
+                        <TextField
+                            fullWidth select value={estadoFiltro} size="small"
                             onChange={(e) => setEstadoFiltro(e.target.value)} 
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         >
-                            <MenuItem value=""><em>-- Todos --</em></MenuItem>
+                            <MenuItem value=""><em>Todos los estados</em></MenuItem>
                             <MenuItem value="Pendiente">Pendiente</MenuItem>
                             <MenuItem value="EnProgreso">En Progreso</MenuItem>
                             <MenuItem value="Completada">Completada</MenuItem>
                             <MenuItem value="Cancelada">Cancelada</MenuItem>
-                            <MenuItem value="Pausada">Cancelada</MenuItem>
                         </TextField>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                            Técnico Asignado
+                        </Typography>
                         <Autocomplete
-                            id="tecnico-filtro" fullWidth options={tecnicosDisponible}
-                            getOptionLabel={(option) => `${option.username} (${option.rol})`}
+                            id="tecnico-filtro" fullWidth options={tecnicosDisponible} size="small"
+                            getOptionLabel={(option) => `${option.username}`}
                             isOptionEqualToValue={(option, value) => option.idUsuario === value.idUsuario}
                             value={tecnicoFiltro} onChange={(event, newValue) => setTecnicoFiltro(newValue)}
                             renderInput={(params) => (
-                                <TextField {...params} label="Filtrar por Técnico" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                                <TextField {...params} placeholder="Todos los técnicos" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }} />
                             )}
                         />
                     </Grid>
                 </Grid>
             </Paper>
 
-            <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden' }}>
+            {/* Tabla Estructurada a lo Stitch */}
+            <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden', bgcolor: '#FFFFFF' }}>
                 <TableContainer>
                     <Table sx={{ minWidth: 900 }}>
-                        <TableHead sx={{ bgcolor: '#FAFAFA' }}>
+                        <TableHead sx={{ bgcolor: 'grey.50' }}>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>ID</TableCell>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>TIPO</TableCell>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>DESCRIPCIÓN</TableCell>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>ORDEN</TableCell>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>TÉCNICO</TableCell>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>FECHA EJEC.</TableCell>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>ESTADO</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary' }}>ACCIONES</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>ID</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Descripción</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Técnico & Orden</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Estado</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {loading ? (
-                                <TableRow><TableCell colSpan={8} align="center" sx={{ py: 5 }}><CircularProgress /></TableCell></TableRow>
+                                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6 }}><CircularProgress /></TableCell></TableRow>
                             ) : filteredTareas.length === 0 ? (
-                                <TableRow><TableCell colSpan={8} align="center" sx={{ py: 4, color: 'text.secondary' }}>No se encontraron tareas.</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary', fontWeight: 500 }}>No se encontraron tareas.</TableCell></TableRow>
                             ) : filteredTareas.map((t) => (
-                                <TableRow key={t.idTarea} hover>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>#{t.idTarea}</TableCell>
-                                    <TableCell>{t.tipo}</TableCell>
-                                    <TableCell sx={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {t.descripcion}
-                                    </TableCell>
+                                <TableRow key={t.idTarea} hover sx={{ '&:hover .acciones-container': { opacity: 1 } }}>
+                                    
+                                    {/* Columna ID */}
                                     <TableCell>
-                                        {t.orden ? (
-                                            <Chip icon={<ConfirmationNumber fontSize="small" />} label={`#${t.orden.idOrden}`} size="small" variant="outlined" color="primary" />
-                                        ) : <Typography variant="body2" color="text.disabled">N/A</Typography>}
+                                        <Typography variant="body2" fontWeight="700" sx={{ bgcolor: 'grey.100', display: 'inline-block', px: 1, py: 0.5, borderRadius: 1, color: 'text.secondary' }}>
+                                            #{t.idTarea}
+                                        </Typography>
                                     </TableCell>
-                                    <TableCell>
-                                        {t.tecnico ? (
+                                    
+                                    {/* Columna Tipo y Descripción Agrupados */}
+                                    <TableCell sx={{ maxWidth: 300 }}>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Person fontSize="small" color="action" />
-                                                <Typography variant="body2" fontWeight="500">{t.tecnico.username}</Typography>
+                                                {getTipoIcon(t.tipo)}
+                                                <Typography variant="body2" fontWeight="700" color="text.primary">{t.tipo}</Typography>
                                             </Box>
-                                        ) : <Typography variant="body2" color="text.disabled">Sin asignar</Typography>}
+                                            <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {t.descripcion}
+                                            </Typography>
+                                        </Box>
                                     </TableCell>
-                                    <TableCell>{t.fechaEjecucion ? new Date(t.fechaEjecucion).toLocaleDateString() : 'N/A'}</TableCell>
+
+                                    {/* Columna Técnico y Orden Agrupados */}
                                     <TableCell>
-                                        <Chip label={t.estado} size="small" color={getEstadoColor(t.estado)} sx={{ fontWeight: 'bold' }} />
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Person fontSize="small" sx={{ color: 'text.disabled' }} />
+                                                <Typography variant="body2" fontWeight="600" color="text.primary">
+                                                    {t.tecnico ? t.tecnico.username : <span style={{fontStyle: 'italic', color: 'gray'}}>Sin asignar</span>}
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <ConfirmationNumber fontSize="small" sx={{ color: 'text.disabled' }} />
+                                                <Typography variant="caption" color="text.secondary" fontWeight="500">
+                                                    {t.orden ? `Orden #${t.orden.codigoOrden || t.orden.idOrden}` : 'N/A'}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
                                     </TableCell>
+
+                                    {/* Columna Estado */}
+                                    <TableCell>
+                                        <Chip label={t.estado} size="small" color={getEstadoColor(t.estado)} sx={{ fontWeight: 'bold', borderRadius: 1.5 }} />
+                                    </TableCell>
+                                    
+                                    {/* Columna Acciones (Invisibles hasta Hover) */}
                                     <TableCell align="right">
-                                        <Tooltip title="Editar Tarea">
-                                            <IconButton size="small" color="primary" onClick={() => navigate(`/tareas/editar/${t.idTarea}`)}>
-                                                <Edit fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Eliminar">
-                                            <IconButton size="small" color="error" onClick={() => handleDelete(t.idTarea)}>
-                                                <Delete fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
+                                        <Box className="acciones-container" sx={{ opacity: { xs: 1, lg: 0 }, transition: 'opacity 0.2s ease-in-out', display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                                            <Tooltip title="Ver Detalle">
+                                                <IconButton size="small" color="default" onClick={() => navigate(`/tareas/${t.idTarea}`)}>
+                                                    <Visibility fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Editar Tarea">
+                                                <IconButton size="small" color="primary" onClick={() => navigate(`/tareas/editar/${t.idTarea}`)}>
+                                                    <Edit fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Eliminar">
+                                                <IconButton size="small" color="error" onClick={() => handleDelete(t.idTarea)}>
+                                                    <Delete fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Box>
                                     </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
                 </TableContainer>
+                
+                {/* Pie de Tabla (Paginador Visual) */}
+                <Box sx={{ px: 3, py: 2, bgcolor: 'grey.50', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption" fontWeight="600" color="text.secondary">
+                        Mostrando {filteredTareas.length} tareas
+                    </Typography>
+                </Box>
             </Paper>
         </Box>
     );
