@@ -32,11 +32,14 @@ export default function Tareas() {
                 tareaService.getAll(),
                 usuarioService.getAll()
             ]);
-            setTareas(tareasData);
-            setFilteredTareas(tareasData);
-            setTecnicosDisponible(tecnicosData);
+            setTareas(tareasData || []);
+            setFilteredTareas(tareasData || []);
+            setTecnicosDisponible(tecnicosData || []);
         } catch (error) {
             console.error("Error al cargar datos:", error);
+            // Evitar que la tabla explote si la API falla
+            setTareas([]);
+            setFilteredTareas([]);
         } finally {
             setLoading(false);
         }
@@ -46,7 +49,7 @@ export default function Tareas() {
         cargarDatos();
     }, []);
 
-    // Lógica de filtrado en React
+    // Lógica de filtrado
     const aplicarFiltros = useCallback(() => {
         let tempTareas = [...tareas];
 
@@ -71,6 +74,7 @@ export default function Tareas() {
     }, [aplicarFiltros]);
 
     const handleDelete = async (id) => {
+        if (!id) return; // Evitar llamadas a /undefined
         if (window.confirm('¿Eliminar definitivamente esta tarea?')) {
             try {
                 await tareaService.remove(id);
@@ -114,7 +118,7 @@ export default function Tareas() {
                 <Typography color="text.primary" fontWeight="bold">Tareas Técnicas</Typography>
             </Breadcrumbs>
 
-            {/* Cabecera Estilo Stitch */}
+            {/* Cabecera */}
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, mb: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar sx={{ bgcolor: 'info.light', color: 'info.main', width: 56, height: 56, boxShadow: 1 }} variant="rounded">
@@ -122,17 +126,16 @@ export default function Tareas() {
                     </Avatar>
                     <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Typography variant="h4" fontWeight="800" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>Tareas Técnicas</Typography>
+                            <Typography variant="h4" fontWeight="800" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>Mantenimiento</Typography>
                             {pendingTasksCount > 0 && (
                                 <Chip 
                                     label={`${pendingTasksCount} Pendientes`} 
                                     size="small" 
                                     color="info" 
-                                    sx={{ fontWeight: 'bold', borderRadius: 2 }} 
+                                    sx={{ fontWeight: 'bold', borderRadius: 1.5 }} 
                                 />
                             )}
                         </Box>
-                        <Typography variant="body2" color="text.secondary" fontWeight="500">Gestión y seguimiento de trabajos de mantenimiento.</Typography>
                     </Box>
                 </Box>
                 <Button 
@@ -144,37 +147,29 @@ export default function Tareas() {
                 </Button>
             </Box>
 
-            {/* Fila de Filtros Estilo Stitch */}
+            {/* Fila de Filtros (Corregido MUI Grid v2 compatibility) */}
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 3, mb: 3, bgcolor: '#FFFFFF' }}>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
-                            Fecha Desde
-                        </Typography>
+                    {/* Nota: En MUI v5+ ya no se requiere la prop 'item' en el Grid hijo, solo el tamaño (xs, sm, md) */}
+                    <Grid xs={12} sm={6} md={3}>
                         <TextField
-                            fullWidth type="date" value={fechaDesde} size="small"
+                            fullWidth type="date" label="Ejecución Desde" value={fechaDesde} size="small"
                             onChange={(e) => setFechaDesde(e.target.value)} InputLabelProps={{ shrink: true }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         />
                     </Grid>
                     
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
-                            Fecha Hasta
-                        </Typography>
+                    <Grid xs={12} sm={6} md={3}>
                         <TextField
-                            fullWidth type="date" value={fechaHasta} size="small"
+                            fullWidth type="date" label="Ejecución Hasta" value={fechaHasta} size="small"
                             onChange={(e) => setFechaHasta(e.target.value)} InputLabelProps={{ shrink: true }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         />
                     </Grid>
 
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
-                            Estado
-                        </Typography>
+                    <Grid xs={12} sm={6} md={3}>
                         <TextField
-                            fullWidth select value={estadoFiltro} size="small"
+                            fullWidth select label="Estado" value={estadoFiltro} size="small"
                             onChange={(e) => setEstadoFiltro(e.target.value)} 
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         >
@@ -186,80 +181,92 @@ export default function Tareas() {
                         </TextField>
                     </Grid>
 
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
-                            Técnico Asignado
-                        </Typography>
+                    <Grid xs={12} sm={6} md={3}>
                         <Autocomplete
                             id="tecnico-filtro" fullWidth options={tecnicosDisponible} size="small"
                             getOptionLabel={(option) => `${option.username}`}
                             isOptionEqualToValue={(option, value) => option.idUsuario === value.idUsuario}
                             value={tecnicoFiltro} onChange={(event, newValue) => setTecnicoFiltro(newValue)}
                             renderInput={(params) => (
-                                <TextField {...params} placeholder="Todos los técnicos" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }} />
+                                <TextField {...params} label="Filtrar por Técnico" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }} />
                             )}
                         />
                     </Grid>
                 </Grid>
             </Paper>
 
-            {/* Tabla Estructurada a lo Stitch */}
+            {/* Tabla Principal */}
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden', bgcolor: '#FFFFFF' }}>
                 <TableContainer>
                     <Table sx={{ minWidth: 900 }}>
                         <TableHead sx={{ bgcolor: 'grey.50' }}>
                             <TableRow>
                                 <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>ID</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Tipo</TableCell>
                                 <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Descripción</TableCell>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Técnico & Orden</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Orden Asignada</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Técnico</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Fecha Ejec.</TableCell>
                                 <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Estado</TableCell>
                                 <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Acciones</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {loading ? (
-                                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6 }}><CircularProgress /></TableCell></TableRow>
+                                <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6 }}><CircularProgress /></TableCell></TableRow>
                             ) : filteredTareas.length === 0 ? (
-                                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary', fontWeight: 500 }}>No se encontraron tareas.</TableCell></TableRow>
-                            ) : filteredTareas.map((t) => (
-                                <TableRow key={t.idTarea} hover sx={{ '&:hover .acciones-container': { opacity: 1 } }}>
+                                <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary', fontWeight: 500 }}>No se encontraron tareas.</TableCell></TableRow>
+                            ) : filteredTareas.map((t, index) => {
+                                // Aseguramos que la key sea única. Si no hay idTarea (cosa que no debería pasar), usamos el index
+                                const uniqueKey = t.idTarea ? `tarea-${t.idTarea}` : `fallback-${index}`;
+                                
+                                return (
+                                <TableRow key={uniqueKey} hover sx={{ '&:hover .acciones-container': { opacity: 1 } }}>
                                     
                                     {/* Columna ID */}
                                     <TableCell>
                                         <Typography variant="body2" fontWeight="700" sx={{ bgcolor: 'grey.100', display: 'inline-block', px: 1, py: 0.5, borderRadius: 1, color: 'text.secondary' }}>
-                                            #{t.idTarea}
+                                            #{t.idTarea || 'N/A'}
                                         </Typography>
                                     </TableCell>
                                     
-                                    {/* Columna Tipo y Descripción Agrupados */}
-                                    <TableCell sx={{ maxWidth: 300 }}>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                {getTipoIcon(t.tipo)}
-                                                <Typography variant="body2" fontWeight="700" color="text.primary">{t.tipo}</Typography>
-                                            </Box>
-                                            <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {t.descripcion}
-                                            </Typography>
+                                    {/* Columna Tipo */}
+                                    <TableCell>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            {getTipoIcon(t.tipo)}
+                                            <Typography variant="body2" fontWeight="700" color="text.primary">{t.tipo}</Typography>
                                         </Box>
                                     </TableCell>
 
-                                    {/* Columna Técnico y Orden Agrupados */}
+                                    {/* Columna Descripción */}
+                                    <TableCell sx={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        <Typography variant="body2" color="text.secondary" title={t.descripcion}>
+                                            {t.descripcion}
+                                        </Typography>
+                                    </TableCell>
+
+                                    {/* Columna Orden */}
                                     <TableCell>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                        {t.orden ? (
+                                            <Chip icon={<ConfirmationNumber fontSize="small" />} label={`#${t.orden.idOrden}`} size="small" variant="outlined" color="primary" />
+                                        ) : <Typography variant="body2" color="text.disabled">N/A</Typography>}
+                                    </TableCell>
+
+                                    {/* Columna Técnico */}
+                                    <TableCell>
+                                        {t.tecnico ? (
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Person fontSize="small" sx={{ color: 'text.disabled' }} />
-                                                <Typography variant="body2" fontWeight="600" color="text.primary">
-                                                    {t.tecnico ? t.tecnico.username : <span style={{fontStyle: 'italic', color: 'gray'}}>Sin asignar</span>}
-                                                </Typography>
+                                                <Person fontSize="small" color="action" />
+                                                <Typography variant="body2" fontWeight="500">{t.tecnico.username}</Typography>
                                             </Box>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <ConfirmationNumber fontSize="small" sx={{ color: 'text.disabled' }} />
-                                                <Typography variant="caption" color="text.secondary" fontWeight="500">
-                                                    {t.orden ? `Orden #${t.orden.codigoOrden || t.orden.idOrden}` : 'N/A'}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
+                                        ) : <Typography variant="body2" color="text.disabled">Sin asignar</Typography>}
+                                    </TableCell>
+
+                                    {/* Columna Fecha */}
+                                    <TableCell>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {t.fechaEjecucion ? new Date(t.fechaEjecucion).toLocaleDateString() : 'N/A'}
+                                        </Typography>
                                     </TableCell>
 
                                     {/* Columna Estado */}
@@ -267,7 +274,7 @@ export default function Tareas() {
                                         <Chip label={t.estado} size="small" color={getEstadoColor(t.estado)} sx={{ fontWeight: 'bold', borderRadius: 1.5 }} />
                                     </TableCell>
                                     
-                                    {/* Columna Acciones (Invisibles hasta Hover) */}
+                                    {/* Columna Acciones */}
                                     <TableCell align="right">
                                         <Box className="acciones-container" sx={{ opacity: { xs: 1, lg: 0 }, transition: 'opacity 0.2s ease-in-out', display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
                                             <Tooltip title="Ver Detalle">
@@ -288,12 +295,12 @@ export default function Tareas() {
                                         </Box>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            )})}
                         </TableBody>
                     </Table>
                 </TableContainer>
                 
-                {/* Pie de Tabla (Paginador Visual) */}
+                {/* Pie de Tabla */}
                 <Box sx={{ px: 3, py: 2, bgcolor: 'grey.50', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="caption" fontWeight="600" color="text.secondary">
                         Mostrando {filteredTareas.length} tareas
