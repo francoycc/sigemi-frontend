@@ -32,12 +32,16 @@ export default function Tareas() {
                 tareaService.getAll(),
                 usuarioService.getAll()
             ]);
+            
+            if (tareasData && tareasData.length > 0) {
+                console.log("Estructura de la primera tarea:", tareasData[0]);
+            }
+
             setTareas(tareasData || []);
             setFilteredTareas(tareasData || []);
             setTecnicosDisponible(tecnicosData || []);
         } catch (error) {
             console.error("Error al cargar datos:", error);
-            // Evitar que la tabla explote si la API falla
             setTareas([]);
             setFilteredTareas([]);
         } finally {
@@ -63,7 +67,11 @@ export default function Tareas() {
             tempTareas = tempTareas.filter(t => t.estado === estadoFiltro);
         }
         if (tecnicoFiltro) {
-            tempTareas = tempTareas.filter(t => t.tecnico?.idUsuario === tecnicoFiltro.idUsuario);
+            const techId = tecnicoFiltro.idUsuario || tecnicoFiltro.id;
+            tempTareas = tempTareas.filter(t => {
+                const tTechId = t.tecnico?.idUsuario || t.tecnico?.id;
+                return tTechId === techId;
+            });
         }
 
         setFilteredTareas(tempTareas);
@@ -74,7 +82,7 @@ export default function Tareas() {
     }, [aplicarFiltros]);
 
     const handleDelete = async (id) => {
-        if (!id) return; // Evitar llamadas a /undefined
+        if (!id) return;
         if (window.confirm('¿Eliminar definitivamente esta tarea?')) {
             try {
                 await tareaService.remove(id);
@@ -83,6 +91,13 @@ export default function Tareas() {
                 alert("Error al intentar eliminar la tarea.");
             }
         }
+    };
+
+    // Helper para extraer de forma segura el ID 
+    const getId = (obj, prefijo) => {
+        if (!obj) return 'N/A';
+        
+        return obj[`id${prefijo}`] || obj.id || 'N/A';
     };
 
     // Helpers visuales
@@ -94,6 +109,7 @@ export default function Tareas() {
             case 'EnProgreso': return 'info';
             case 'Completada': return 'success';
             case 'Cancelada': return 'error';
+            case 'Pausada': return 'warning';
             default: return 'default';
         }
     };
@@ -147,29 +163,39 @@ export default function Tareas() {
                 </Button>
             </Box>
 
-            {/* Fila de Filtros (Corregido MUI Grid v2 compatibility) */}
+            {/* Fila de Filtros */}
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 3, mb: 3, bgcolor: '#FFFFFF' }}>
                 <Grid container spacing={2}>
-                    {/* Nota: En MUI v5+ ya no se requiere la prop 'item' en el Grid hijo, solo el tamaño (xs, sm, md) */}
-                    <Grid xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                            Fecha Desde
+                        </Typography>
                         <TextField
-                            fullWidth type="date" label="Ejecución Desde" value={fechaDesde} size="small"
-                            onChange={(e) => setFechaDesde(e.target.value)} InputLabelProps={{ shrink: true }}
+                            fullWidth type="date" value={fechaDesde} 
+                            onChange={(e) => setFechaDesde(e.target.value)} 
+                            InputLabelProps={{ shrink: true }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         />
                     </Grid>
                     
-                    <Grid xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                            Fecha Hasta
+                        </Typography>
                         <TextField
-                            fullWidth type="date" label="Ejecución Hasta" value={fechaHasta} size="small"
-                            onChange={(e) => setFechaHasta(e.target.value)} InputLabelProps={{ shrink: true }}
+                            fullWidth type="date" value={fechaHasta} 
+                            onChange={(e) => setFechaHasta(e.target.value)} 
+                            InputLabelProps={{ shrink: true }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         />
                     </Grid>
 
-                    <Grid xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                            Estado
+                        </Typography>
                         <TextField
-                            fullWidth select label="Estado" value={estadoFiltro} size="small"
+                            fullWidth select value={estadoFiltro} 
                             onChange={(e) => setEstadoFiltro(e.target.value)} 
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         >
@@ -181,21 +207,24 @@ export default function Tareas() {
                         </TextField>
                     </Grid>
 
-                    <Grid xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
+                            Técnico Asignado
+                        </Typography>
                         <Autocomplete
-                            id="tecnico-filtro" fullWidth options={tecnicosDisponible} size="small"
+                            id="tecnico-filtro" fullWidth options={tecnicosDisponible} 
                             getOptionLabel={(option) => `${option.username}`}
-                            isOptionEqualToValue={(option, value) => option.idUsuario === value.idUsuario}
+                            isOptionEqualToValue={(option, value) => getId(option, 'Usuario') === getId(value, 'Usuario')}
                             value={tecnicoFiltro} onChange={(event, newValue) => setTecnicoFiltro(newValue)}
                             renderInput={(params) => (
-                                <TextField {...params} label="Filtrar por Técnico" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }} />
+                                <TextField {...params} placeholder="Todos los técnicos" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }} />
                             )}
                         />
                     </Grid>
                 </Grid>
             </Paper>
 
-            {/* Tabla Principal */}
+            {/* Tabla Estructurada */}
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden', bgcolor: '#FFFFFF' }}>
                 <TableContainer>
                     <Table sx={{ minWidth: 900 }}>
@@ -217,16 +246,17 @@ export default function Tareas() {
                             ) : filteredTareas.length === 0 ? (
                                 <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary', fontWeight: 500 }}>No se encontraron tareas.</TableCell></TableRow>
                             ) : filteredTareas.map((t, index) => {
-                                // Aseguramos que la key sea única. Si no hay idTarea (cosa que no debería pasar), usamos el index
-                                const uniqueKey = t.idTarea ? `tarea-${t.idTarea}` : `fallback-${index}`;
+                                
+                                const tareaId = getId(t, 'Tarea');
+                                const uniqueKey = tareaId !== 'N/A' ? `tarea-${tareaId}` : `fallback-${index}`;
                                 
                                 return (
                                 <TableRow key={uniqueKey} hover sx={{ '&:hover .acciones-container': { opacity: 1 } }}>
                                     
-                                    {/* Columna ID */}
+                                    {/* Columna ID Tarea */}
                                     <TableCell>
                                         <Typography variant="body2" fontWeight="700" sx={{ bgcolor: 'grey.100', display: 'inline-block', px: 1, py: 0.5, borderRadius: 1, color: 'text.secondary' }}>
-                                            #{t.idTarea || 'N/A'}
+                                            #{tareaId}
                                         </Typography>
                                     </TableCell>
                                     
@@ -245,10 +275,14 @@ export default function Tareas() {
                                         </Typography>
                                     </TableCell>
 
-                                    {/* Columna Orden */}
+                                    {/* Columna Orden Asignada */}
                                     <TableCell>
                                         {t.orden ? (
-                                            <Chip icon={<ConfirmationNumber fontSize="small" />} label={`#${t.orden.idOrden}`} size="small" variant="outlined" color="primary" />
+                                            <Chip 
+                                                icon={<ConfirmationNumber fontSize="small" />} 
+                                                label={`#${getId(t.orden, 'Orden')}`} 
+                                                size="small" variant="outlined" color="primary" 
+                                            />
                                         ) : <Typography variant="body2" color="text.disabled">N/A</Typography>}
                                     </TableCell>
 
@@ -278,17 +312,18 @@ export default function Tareas() {
                                     <TableCell align="right">
                                         <Box className="acciones-container" sx={{ opacity: { xs: 1, lg: 0 }, transition: 'opacity 0.2s ease-in-out', display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
                                             <Tooltip title="Ver Detalle">
-                                                <IconButton size="small" color="default" onClick={() => navigate(`/tareas/${t.idTarea}`)}>
+                                                {/* Navegación segura usando el ID extraído */}
+                                                <IconButton size="small" color="default" onClick={() => navigate(`/tareas/${tareaId}`)}>
                                                     <Visibility fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                             <Tooltip title="Editar Tarea">
-                                                <IconButton size="small" color="primary" onClick={() => navigate(`/tareas/editar/${t.idTarea}`)}>
+                                                <IconButton size="small" color="primary" onClick={() => navigate(`/tareas/editar/${tareaId}`)}>
                                                     <Edit fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                             <Tooltip title="Eliminar">
-                                                <IconButton size="small" color="error" onClick={() => handleDelete(t.idTarea)}>
+                                                <IconButton size="small" color="error" onClick={() => handleDelete(tareaId)}>
                                                     <Delete fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>

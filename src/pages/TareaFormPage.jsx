@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-    Box, Typography, Paper, Button, TextField, MenuItem, Grid, Avatar, CircularProgress, Breadcrumbs, Link
+    Box, Typography, Paper, Button, TextField, MenuItem, Grid, Avatar, Divider, CircularProgress, Breadcrumbs, Link
 } from '@mui/material';
 import { Save, ArrowBack, AssignmentTurnedIn, Assignment, Dashboard as DashboardIcon } from '@mui/icons-material';
 import tareaService from '../services/tareaService';
@@ -18,7 +18,7 @@ export default function TareaFormPage() {
     const [ordenes, setOrdenes] = useState([]);
     const [tecnicos, setTecnicos] = useState([]);
     
-    // Mapeo exacto a tu entidad backend
+    // Estado del formulario:
     const [formData, setFormData] = useState({
         tipo: 'Preventivo',
         descripcion: '',
@@ -32,12 +32,14 @@ export default function TareaFormPage() {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
+                // Cargar catálogos reales desde la BD
                 const [ordData, usrData] = await Promise.all([
                     ordenService.getAll(),
                     usuarioService.getAll() 
                 ]);
-                setOrdenes(ordData);
-                setTecnicos(usrData);
+                
+                setOrdenes(ordData || []);
+                setTecnicos(usrData || []);
 
                 if (isEditMode) {
                     const data = await tareaService.getById(id);
@@ -47,17 +49,19 @@ export default function TareaFormPage() {
                         fechaEjecucion: data.fechaEjecucion ? data.fechaEjecucion.split('T')[0] : '',
                         estado: data.estado || 'Pendiente',
                         tiempoInvertidoHoras: data.tiempoInvertidoHoras || '',
-                        ordenId: data.orden?.idOrden || '',
-                        tecnicoId: data.tecnico?.idUsuario || ''
+                        ordenId: data.orden?.idOrden || data.orden?.id || '',
+                        tecnicoId: data.tecnico?.idUsuario || data.tecnico?.id || ''
                     });
                 }
             } catch (err) {
-                alert("Error al cargar la información requerida.");
+                console.error("Error cargando dependencias:", err);
+                alert("Error al cargar la información requerida de la BD.");
                 navigate('/tareas');
             } finally {
                 setLoading(false);
             }
         };
+
         fetchInitialData();
     }, [id, isEditMode, navigate]);
 
@@ -70,6 +74,7 @@ export default function TareaFormPage() {
         e.preventDefault();
         setSaving(true);
 
+        // Parseo seguro para el backend
         const payload = {
             ...formData,
             tiempoInvertidoHoras: formData.tiempoInvertidoHoras === '' ? null : parseFloat(formData.tiempoInvertidoHoras),
@@ -85,8 +90,9 @@ export default function TareaFormPage() {
             }
             navigate('/tareas'); 
         } catch (err) {
+            console.error(err);
             const errorMsg = err.response?.data?.message || "Verifique los campos ingresados.";
-            alert(`Error al guardar: ${errorMsg}`);
+            alert(`Error al guardar la tarea: ${errorMsg}`);
             setSaving(false);
         }
     };
@@ -99,7 +105,7 @@ export default function TareaFormPage() {
         <Box sx={{ maxWidth: 900, mx: 'auto', p: 1 }}>
             
             <Breadcrumbs sx={{ mb: 3 }}>
-                <Link underline="hover" color="inherit" onClick={() => navigate('/dashboard')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                <Link underline="hover" color="inherit" onClick={() => navigate('/dashboard')} sx={{ cursor: 'pointer' }}>
                     <DashboardIcon sx={{ mr: 0.5 }} fontSize="inherit" /> Dashboard
                 </Link>
                 <Link underline="hover" color="inherit" onClick={() => navigate('/tareas')} sx={{ cursor: 'pointer' }}>
@@ -111,28 +117,33 @@ export default function TareaFormPage() {
             </Breadcrumbs>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-                <Avatar sx={{ bgcolor: 'info.light', color: 'info.main', width: 56, height: 56 }} variant="rounded">
+                <Avatar sx={{ bgcolor: 'info.light', color: 'info.main', width: 56, height: 56, boxShadow: 1 }} variant="rounded">
                     {isEditMode ? <AssignmentTurnedIn fontSize="large" /> : <Assignment fontSize="large" />}
                 </Avatar>
                 <Box>
                     <Typography variant="h4" fontWeight="800" color="text.primary">
-                        {isEditMode ? 'Modificar Tarea' : 'Creación de Tarea'}
+                        {isEditMode ? 'Modificar Tarea' : 'Registrar Nueva Tarea'}
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
-                        Especifique los detalles de ejecución e imputación de tiempos.
+                        Especifique los detalles técnicos e impute tiempos.
                     </Typography>
                 </Box>
             </Box>
 
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: { xs: 3, md: 5 }, bgcolor: '#FFFFFF' }}>
                 <Box component="form" onSubmit={handleSubmit} noValidate>
-                    <Grid container spacing={3}>
-                        
+                    
+                    <Typography variant="overline" color="text.secondary" fontWeight="700" sx={{ mb: 2, display: 'block' }}>
+                        DETALLES DE LA ACTIVIDAD
+                    </Typography>
+                    
+                    {/* Grilla principal - */}
+                    <Grid container spacing={3} sx={{ mb: 4 }}>
                         <Grid item xs={12} sm={4}>
                             <TextField
                                 fullWidth select label="Tipo de Mantenimiento" name="tipo" 
                                 value={formData.tipo} onChange={handleChange} required
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             >
                                 <MenuItem value="Preventivo">Preventivo</MenuItem>
                                 <MenuItem value="Correctivo">Correctivo</MenuItem>
@@ -145,7 +156,7 @@ export default function TareaFormPage() {
                                 fullWidth type="date" label="Fecha de Ejecución" name="fechaEjecucion" 
                                 value={formData.fechaEjecucion} onChange={handleChange} required
                                 InputLabelProps={{ shrink: true }}
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             />
                         </Grid>
 
@@ -153,12 +164,13 @@ export default function TareaFormPage() {
                             <TextField
                                 fullWidth select label="Estado de la Tarea" name="estado" 
                                 value={formData.estado} onChange={handleChange} required
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             >
                                 <MenuItem value="Pendiente">Pendiente</MenuItem>
                                 <MenuItem value="EnProgreso">En Progreso</MenuItem>
                                 <MenuItem value="Completada">Completada</MenuItem>
                                 <MenuItem value="Cancelada">Cancelada</MenuItem>
+                                <MenuItem value="Pausada">Pausada</MenuItem>
                             </TextField>
                         </Grid>
 
@@ -166,21 +178,29 @@ export default function TareaFormPage() {
                             <TextField
                                 fullWidth multiline rows={4} label="Descripción del Trabajo" name="descripcion" 
                                 value={formData.descripcion} onChange={handleChange} required
-                                placeholder="Detalle los procedimientos a ejecutar o ejecutados..."
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                placeholder="Describa brevemente la actividad técnica a realizar..."
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             />
                         </Grid>
-                        
+                    </Grid>
+
+                    <Divider sx={{ mb: 4 }} />
+                    <Typography variant="overline" color="text.secondary" fontWeight="700" sx={{ mb: 2, display: 'block' }}>
+                        ASIGNACIÓN Y TIEMPOS
+                    </Typography>
+
+                    <Grid container spacing={3}>
                         <Grid item xs={12} sm={5}>
                             <TextField
                                 fullWidth select label="Vincular a Orden" name="ordenId" 
                                 value={formData.ordenId} onChange={handleChange} required
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                helperText="Orden de Mantenimiento padre"
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             >
                                 <MenuItem value=""><em>-- Seleccione --</em></MenuItem>
                                 {ordenes.map(ord => (
                                     <MenuItem key={ord.idOrden} value={ord.idOrden}>
-                                        #{ord.codigoOrden} - {ord.estado}
+                                        #{ord.codigoOrden || ord.idOrden} - {ord.estado}
                                     </MenuItem>
                                 ))}
                             </TextField>
@@ -190,12 +210,13 @@ export default function TareaFormPage() {
                             <TextField
                                 fullWidth select label="Técnico Responsable" name="tecnicoId" 
                                 value={formData.tecnicoId} onChange={handleChange} required
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                helperText="Persona encargada de la ejecución"
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             >
                                 <MenuItem value=""><em>-- Seleccione --</em></MenuItem>
                                 {tecnicos.map(tec => (
                                     <MenuItem key={tec.idUsuario} value={tec.idUsuario}>
-                                        {tec.username}
+                                        {tec.username} ({tec.rol})
                                     </MenuItem>
                                 ))}
                             </TextField>
@@ -207,7 +228,7 @@ export default function TareaFormPage() {
                                 label="Tiempo Invertido (Hs)" name="tiempoInvertidoHoras" 
                                 value={formData.tiempoInvertidoHoras} onChange={handleChange}
                                 placeholder="Ej. 2.5"
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             />
                         </Grid>
                     </Grid>
