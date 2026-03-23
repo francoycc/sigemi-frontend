@@ -18,7 +18,7 @@ export default function TareaFormPage() {
     const [ordenes, setOrdenes] = useState([]);
     const [tecnicos, setTecnicos] = useState([]);
     
-    // Estado del formulario:
+    // Mapeo seguro y sin valores undefined
     const [formData, setFormData] = useState({
         tipo: 'Preventivo',
         descripcion: '',
@@ -32,7 +32,6 @@ export default function TareaFormPage() {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                // Cargar catálogos reales desde la BD
                 const [ordData, usrData] = await Promise.all([
                     ordenService.getAll(),
                     usuarioService.getAll() 
@@ -43,14 +42,15 @@ export default function TareaFormPage() {
 
                 if (isEditMode) {
                     const data = await tareaService.getById(id);
+                    // Acceso directo a propiedades del DTO plano (sin anidamientos propensos a fallar)
                     setFormData({
                         tipo: data.tipo || 'Preventivo',
                         descripcion: data.descripcion || '',
                         fechaEjecucion: data.fechaEjecucion ? data.fechaEjecucion.split('T')[0] : '',
                         estado: data.estado || 'Pendiente',
-                        tiempoInvertidoHoras: data.tiempoInvertidoHoras || '',
-                        ordenId: data.orden?.idOrden || data.orden?.id || '',
-                        tecnicoId: data.tecnico?.idUsuario || data.tecnico?.id || ''
+                        tiempoInvertidoHoras: data.tiempoInvertidoHoras ?? '',
+                        ordenId: data.ordenId ?? '',
+                        tecnicoId: data.tecnicoId ?? ''
                     });
                 }
             } catch (err) {
@@ -74,12 +74,18 @@ export default function TareaFormPage() {
         e.preventDefault();
         setSaving(true);
 
-        // Parseo seguro para el backend
+        // Encontrar los objetos completos para cumplir con la validación @NotBlank del Backend
+        const selectedTecnico = tecnicos.find(t => t.idUsuario === parseInt(formData.tecnicoId));
+        const selectedOrden = ordenes.find(o => o.idOrden === parseInt(formData.ordenId));
+
+        // Payload idéntico a TareaDTO.java
         const payload = {
             ...formData,
             tiempoInvertidoHoras: formData.tiempoInvertidoHoras === '' ? null : parseFloat(formData.tiempoInvertidoHoras),
             ordenId: formData.ordenId === '' ? null : parseInt(formData.ordenId),
-            tecnicoId: formData.tecnicoId === '' ? null : parseInt(formData.tecnicoId)
+            tecnicoId: formData.tecnicoId === '' ? null : parseInt(formData.tecnicoId),
+            tecnicoNombre: selectedTecnico ? selectedTecnico.username : 'PorDefecto', // Evita el error 400 NotBlank
+            ordenCodigo: selectedOrden ? selectedOrden.codigoOrden : ''
         };
 
         try {
@@ -137,7 +143,6 @@ export default function TareaFormPage() {
                         DETALLES DE LA ACTIVIDAD
                     </Typography>
                     
-                    {/* Grilla principal - */}
                     <Grid container spacing={3} sx={{ mb: 4 }}>
                         <Grid item xs={12} sm={4}>
                             <TextField
@@ -170,7 +175,6 @@ export default function TareaFormPage() {
                                 <MenuItem value="EnProgreso">En Progreso</MenuItem>
                                 <MenuItem value="Completada">Completada</MenuItem>
                                 <MenuItem value="Cancelada">Cancelada</MenuItem>
-                                <MenuItem value="Pausada">Pausada</MenuItem>
                             </TextField>
                         </Grid>
 
@@ -197,10 +201,10 @@ export default function TareaFormPage() {
                                 helperText="Orden de Mantenimiento padre"
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             >
-                                <MenuItem value=""><em>-- Seleccione --</em></MenuItem>
+                                <MenuItem value=""><em>-- Seleccione Orden --</em></MenuItem>
                                 {ordenes.map(ord => (
                                     <MenuItem key={ord.idOrden} value={ord.idOrden}>
-                                        #{ord.codigoOrden || ord.idOrden} - {ord.estado}
+                                        Orden #{ord.codigoOrden || ord.idOrden} - {ord.estado}
                                     </MenuItem>
                                 ))}
                             </TextField>
@@ -213,7 +217,7 @@ export default function TareaFormPage() {
                                 helperText="Persona encargada de la ejecución"
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             >
-                                <MenuItem value=""><em>-- Seleccione --</em></MenuItem>
+                                <MenuItem value=""><em>-- Seleccione Técnico --</em></MenuItem>
                                 {tecnicos.map(tec => (
                                     <MenuItem key={tec.idUsuario} value={tec.idUsuario}>
                                         {tec.username} ({tec.rol})

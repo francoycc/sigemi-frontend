@@ -18,7 +18,6 @@ export default function Tareas() {
     const [tecnicosDisponible, setTecnicosDisponible] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Estados para los filtros
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
     const [estadoFiltro, setEstadoFiltro] = useState('');
@@ -32,11 +31,6 @@ export default function Tareas() {
                 tareaService.getAll(),
                 usuarioService.getAll()
             ]);
-            
-            if (tareasData && tareasData.length > 0) {
-                console.log("Estructura de la primera tarea:", tareasData[0]);
-            }
-
             setTareas(tareasData || []);
             setFilteredTareas(tareasData || []);
             setTecnicosDisponible(tecnicosData || []);
@@ -53,7 +47,6 @@ export default function Tareas() {
         cargarDatos();
     }, []);
 
-    // Lógica de filtrado
     const aplicarFiltros = useCallback(() => {
         let tempTareas = [...tareas];
 
@@ -67,11 +60,8 @@ export default function Tareas() {
             tempTareas = tempTareas.filter(t => t.estado === estadoFiltro);
         }
         if (tecnicoFiltro) {
-            const techId = tecnicoFiltro.idUsuario || tecnicoFiltro.id;
-            tempTareas = tempTareas.filter(t => {
-                const tTechId = t.tecnico?.idUsuario || t.tecnico?.id;
-                return tTechId === techId;
-            });
+            // Evaluamos directamente contra el DTO plano del backend
+            tempTareas = tempTareas.filter(t => t.tecnicoId === tecnicoFiltro.idUsuario);
         }
 
         setFilteredTareas(tempTareas);
@@ -93,14 +83,6 @@ export default function Tareas() {
         }
     };
 
-    // Helper para extraer de forma segura el ID 
-    const getId = (obj, prefijo) => {
-        if (!obj) return 'N/A';
-        
-        return obj[`id${prefijo}`] || obj.id || 'N/A';
-    };
-
-    // Helpers visuales
     const pendingTasksCount = tareas.filter(t => t.estado === 'Pendiente').length;
 
     const getEstadoColor = (estado) => {
@@ -109,7 +91,6 @@ export default function Tareas() {
             case 'EnProgreso': return 'info';
             case 'Completada': return 'success';
             case 'Cancelada': return 'error';
-            case 'Pausada': return 'warning';
             default: return 'default';
         }
     };
@@ -126,7 +107,6 @@ export default function Tareas() {
     return (
         <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 2, md: 3 } }}>
             
-            {/* Navegación Breadcrumbs */}
             <Breadcrumbs sx={{ mb: 3 }}>
                 <Link underline="hover" color="inherit" onClick={() => navigate('/dashboard')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <DashboardIcon sx={{ mr: 0.5 }} fontSize="inherit" /> Dashboard
@@ -134,7 +114,6 @@ export default function Tareas() {
                 <Typography color="text.primary" fontWeight="bold">Tareas Técnicas</Typography>
             </Breadcrumbs>
 
-            {/* Cabecera */}
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, mb: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar sx={{ bgcolor: 'info.light', color: 'info.main', width: 56, height: 56, boxShadow: 1 }} variant="rounded">
@@ -144,12 +123,7 @@ export default function Tareas() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <Typography variant="h4" fontWeight="800" color="text.primary" sx={{ letterSpacing: '-0.02em' }}>Mantenimiento</Typography>
                             {pendingTasksCount > 0 && (
-                                <Chip 
-                                    label={`${pendingTasksCount} Pendientes`} 
-                                    size="small" 
-                                    color="info" 
-                                    sx={{ fontWeight: 'bold', borderRadius: 1.5 }} 
-                                />
+                                <Chip label={`${pendingTasksCount} Pendientes`} size="small" color="info" sx={{ fontWeight: 'bold', borderRadius: 1.5 }} />
                             )}
                         </Box>
                     </Box>
@@ -163,7 +137,7 @@ export default function Tareas() {
                 </Button>
             </Box>
 
-            {/* Fila de Filtros */}
+            {/* Filtros visualmente arreglados */}
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 3, mb: 3, bgcolor: '#FFFFFF' }}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={6} md={3}>
@@ -173,7 +147,6 @@ export default function Tareas() {
                         <TextField
                             fullWidth type="date" value={fechaDesde} 
                             onChange={(e) => setFechaDesde(e.target.value)} 
-                            InputLabelProps={{ shrink: true }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         />
                     </Grid>
@@ -185,7 +158,6 @@ export default function Tareas() {
                         <TextField
                             fullWidth type="date" value={fechaHasta} 
                             onChange={(e) => setFechaHasta(e.target.value)} 
-                            InputLabelProps={{ shrink: true }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         />
                     </Grid>
@@ -214,7 +186,7 @@ export default function Tareas() {
                         <Autocomplete
                             id="tecnico-filtro" fullWidth options={tecnicosDisponible} 
                             getOptionLabel={(option) => `${option.username}`}
-                            isOptionEqualToValue={(option, value) => getId(option, 'Usuario') === getId(value, 'Usuario')}
+                            isOptionEqualToValue={(option, value) => option.idUsuario === value.idUsuario}
                             value={tecnicoFiltro} onChange={(event, newValue) => setTecnicoFiltro(newValue)}
                             renderInput={(params) => (
                                 <TextField {...params} placeholder="Todos los técnicos" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }} />
@@ -224,7 +196,6 @@ export default function Tareas() {
                 </Grid>
             </Paper>
 
-            {/* Tabla Estructurada */}
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden', bgcolor: '#FFFFFF' }}>
                 <TableContainer>
                     <Table sx={{ minWidth: 900 }}>
@@ -245,22 +216,15 @@ export default function Tareas() {
                                 <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6 }}><CircularProgress /></TableCell></TableRow>
                             ) : filteredTareas.length === 0 ? (
                                 <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary', fontWeight: 500 }}>No se encontraron tareas.</TableCell></TableRow>
-                            ) : filteredTareas.map((t, index) => {
-                                
-                                const tareaId = getId(t, 'Tarea');
-                                const uniqueKey = tareaId !== 'N/A' ? `tarea-${tareaId}` : `fallback-${index}`;
-                                
-                                return (
-                                <TableRow key={uniqueKey} hover sx={{ '&:hover .acciones-container': { opacity: 1 } }}>
+                            ) : filteredTareas.map((t) => (
+                                <TableRow key={t.idTarea} hover sx={{ '&:hover .acciones-container': { opacity: 1 } }}>
                                     
-                                    {/* Columna ID Tarea */}
                                     <TableCell>
                                         <Typography variant="body2" fontWeight="700" sx={{ bgcolor: 'grey.100', display: 'inline-block', px: 1, py: 0.5, borderRadius: 1, color: 'text.secondary' }}>
-                                            #{tareaId}
+                                            #{t.idTarea}
                                         </Typography>
                                     </TableCell>
                                     
-                                    {/* Columna Tipo */}
                                     <TableCell>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             {getTipoIcon(t.tipo)}
@@ -268,74 +232,68 @@ export default function Tareas() {
                                         </Box>
                                     </TableCell>
 
-                                    {/* Columna Descripción */}
                                     <TableCell sx={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                         <Typography variant="body2" color="text.secondary" title={t.descripcion}>
                                             {t.descripcion}
                                         </Typography>
                                     </TableCell>
 
-                                    {/* Columna Orden Asignada */}
+                                    {/* Mapeo plano directo del DTO */}
                                     <TableCell>
-                                        {t.orden ? (
+                                        {t.ordenId ? (
                                             <Chip 
                                                 icon={<ConfirmationNumber fontSize="small" />} 
-                                                label={`#${getId(t.orden, 'Orden')}`} 
+                                                label={`#${t.ordenCodigo || t.ordenId}`} 
                                                 size="small" variant="outlined" color="primary" 
                                             />
                                         ) : <Typography variant="body2" color="text.disabled">N/A</Typography>}
                                     </TableCell>
 
-                                    {/* Columna Técnico */}
+                                    {/* Mapeo plano directo del DTO */}
                                     <TableCell>
-                                        {t.tecnico ? (
+                                        {t.tecnicoNombre ? (
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                 <Person fontSize="small" color="action" />
-                                                <Typography variant="body2" fontWeight="500">{t.tecnico.username}</Typography>
+                                                <Typography variant="body2" fontWeight="500">{t.tecnicoNombre}</Typography>
                                             </Box>
                                         ) : <Typography variant="body2" color="text.disabled">Sin asignar</Typography>}
                                     </TableCell>
 
-                                    {/* Columna Fecha */}
                                     <TableCell>
                                         <Typography variant="body2" color="text.secondary">
                                             {t.fechaEjecucion ? new Date(t.fechaEjecucion).toLocaleDateString() : 'N/A'}
                                         </Typography>
                                     </TableCell>
 
-                                    {/* Columna Estado */}
                                     <TableCell>
                                         <Chip label={t.estado} size="small" color={getEstadoColor(t.estado)} sx={{ fontWeight: 'bold', borderRadius: 1.5 }} />
                                     </TableCell>
                                     
-                                    {/* Columna Acciones */}
                                     <TableCell align="right">
                                         <Box className="acciones-container" sx={{ opacity: { xs: 1, lg: 0 }, transition: 'opacity 0.2s ease-in-out', display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
                                             <Tooltip title="Ver Detalle">
-                                                {/* Navegación segura usando el ID extraído */}
-                                                <IconButton size="small" color="default" onClick={() => navigate(`/tareas/${tareaId}`)}>
+                                                <IconButton size="small" color="default" onClick={() => navigate(`/tareas/${t.idTarea}`)}>
                                                     <Visibility fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                             <Tooltip title="Editar Tarea">
-                                                <IconButton size="small" color="primary" onClick={() => navigate(`/tareas/editar/${tareaId}`)}>
+                                                <IconButton size="small" color="primary" onClick={() => navigate(`/tareas/editar/${t.idTarea}`)}>
                                                     <Edit fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                             <Tooltip title="Eliminar">
-                                                <IconButton size="small" color="error" onClick={() => handleDelete(tareaId)}>
+                                                <IconButton size="small" color="error" onClick={() => handleDelete(t.idTarea)}>
                                                     <Delete fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                         </Box>
                                     </TableCell>
                                 </TableRow>
-                            )})}
+                            ))}
                         </TableBody>
                     </Table>
                 </TableContainer>
                 
-                {/* Pie de Tabla */}
                 <Box sx={{ px: 3, py: 2, bgcolor: 'grey.50', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="caption" fontWeight="600" color="text.secondary">
                         Mostrando {filteredTareas.length} tareas
