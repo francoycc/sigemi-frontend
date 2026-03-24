@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-    Box, Typography, Paper, Button, Table, TableBody, 
+    Box, Typography, Card, Button, Table, TableBody, 
     TableCell, TableContainer, TableHead, TableRow, Chip, 
     IconButton, Tooltip, CircularProgress, Avatar, Breadcrumbs, Link, TextField, Autocomplete, Grid, MenuItem
 } from '@mui/material';
@@ -129,16 +129,15 @@ export default function Tareas() {
                     </Box>
                 </Box>
                 <Button 
-                    variant="contained" color="info" startIcon={<Add />} 
-                    sx={{ px: 3, py: 1.2, borderRadius: 2, fontWeight: 'bold', boxShadow: 2 }}
+                    variant="contained" color="primary" startIcon={<Add />} 
                     onClick={() => navigate('/tareas/nueva')}
                 >
                     Nueva Tarea
                 </Button>
             </Box>
 
-            {/* Filtros visualmente arreglados */}
-            <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 3, mb: 3, bgcolor: '#FFFFFF' }}>
+            {/* Filtros */}
+            <Card sx={{ mb: 3 }}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={6} md={3}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>
@@ -147,7 +146,6 @@ export default function Tareas() {
                         <TextField
                             fullWidth type="date" value={fechaDesde} 
                             onChange={(e) => setFechaDesde(e.target.value)} 
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         />
                     </Grid>
                     
@@ -158,7 +156,6 @@ export default function Tareas() {
                         <TextField
                             fullWidth type="date" value={fechaHasta} 
                             onChange={(e) => setFechaHasta(e.target.value)} 
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         />
                     </Grid>
 
@@ -169,7 +166,6 @@ export default function Tareas() {
                         <TextField
                             fullWidth select value={estadoFiltro} 
                             onChange={(e) => setEstadoFiltro(e.target.value)} 
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                         >
                             <MenuItem value=""><em>Todos los estados</em></MenuItem>
                             <MenuItem value="Pendiente">Pendiente</MenuItem>
@@ -189,14 +185,14 @@ export default function Tareas() {
                             isOptionEqualToValue={(option, value) => option.idUsuario === value.idUsuario}
                             value={tecnicoFiltro} onChange={(event, newValue) => setTecnicoFiltro(newValue)}
                             renderInput={(params) => (
-                                <TextField {...params} placeholder="Todos los técnicos" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }} />
+                                <TextField {...params} placeholder="Todos los técnicos" />
                             )}
                         />
                     </Grid>
                 </Grid>
-            </Paper>
+            </Card>
 
-            <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden', bgcolor: '#FFFFFF' }}>
+            <Card sx={{ p: 0, overflow: 'hidden' }}>
                 <TableContainer>
                     <Table sx={{ minWidth: 900 }}>
                         <TableHead sx={{ bgcolor: 'grey.50' }}>
@@ -299,7 +295,7 @@ export default function Tareas() {
                         Mostrando {filteredTareas.length} tareas
                     </Typography>
                 </Box>
-            </Paper>
+            </Card>
         </Box>
     );
 }

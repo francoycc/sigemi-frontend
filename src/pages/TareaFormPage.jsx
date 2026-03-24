@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-    Box, Typography, Paper, Button, TextField, MenuItem, Grid, Avatar, Divider, CircularProgress, Breadcrumbs, Link
+    Box, Typography, Card, Button, TextField, MenuItem, Grid, Avatar, Divider, CircularProgress, Breadcrumbs, Link
 } from '@mui/material';
 import { Save, ArrowBack, AssignmentTurnedIn, Assignment, Dashboard as DashboardIcon } from '@mui/icons-material';
 import tareaService from '../services/tareaService';
@@ -136,7 +136,7 @@ export default function TareaFormPage() {
                 </Box>
             </Box>
 
-            <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: { xs: 3, md: 5 }, bgcolor: '#FFFFFF' }}>
+            <Card>
                 <Box component="form" onSubmit={handleSubmit} noValidate>
                     
                     <Typography variant="overline" color="text.secondary" fontWeight="700" sx={{ mb: 2, display: 'block' }}>
@@ -148,7 +148,6 @@ export default function TareaFormPage() {
                             <TextField
                                 fullWidth select label="Tipo de Mantenimiento" name="tipo" 
                                 value={formData.tipo} onChange={handleChange} required
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             >
                                 <MenuItem value="Preventivo">Preventivo</MenuItem>
                                 <MenuItem value="Correctivo">Correctivo</MenuItem>
@@ -161,7 +160,6 @@ export default function TareaFormPage() {
                                 fullWidth type="date" label="Fecha de Ejecución" name="fechaEjecucion" 
                                 value={formData.fechaEjecucion} onChange={handleChange} required
                                 InputLabelProps={{ shrink: true }}
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             />
                         </Grid>
 
@@ -169,7 +167,6 @@ export default function TareaFormPage() {
                             <TextField
                                 fullWidth select label="Estado de la Tarea" name="estado" 
                                 value={formData.estado} onChange={handleChange} required
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             >
                                 <MenuItem value="Pendiente">Pendiente</MenuItem>
                                 <MenuItem value="EnProgreso">En Progreso</MenuItem>
@@ -183,7 +180,6 @@ export default function TareaFormPage() {
                                 fullWidth multiline rows={4} label="Descripción del Trabajo" name="descripcion" 
                                 value={formData.descripcion} onChange={handleChange} required
                                 placeholder="Describa brevemente la actividad técnica a realizar..."
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             />
                         </Grid>
                     </Grid>
@@ -199,7 +195,6 @@ export default function TareaFormPage() {
                                 fullWidth select label="Vincular a Orden" name="ordenId" 
                                 value={formData.ordenId} onChange={handleChange} required
                                 helperText="Orden de Mantenimiento padre"
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             >
                                 <MenuItem value=""><em>-- Seleccione Orden --</em></MenuItem>
                                 {ordenes.map(ord => (
@@ -215,7 +210,6 @@ export default function TareaFormPage() {
                                 fullWidth select label="Técnico Responsable" name="tecnicoId" 
                                 value={formData.tecnicoId} onChange={handleChange} required
                                 helperText="Persona encargada de la ejecución"
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             >
                                 <MenuItem value=""><em>-- Seleccione Técnico --</em></MenuItem>
                                 {tecnicos.map(tec => (
@@ -232,30 +226,27 @@ export default function TareaFormPage() {
                                 label="Tiempo Invertido (Hs)" name="tiempoInvertidoHoras" 
                                 value={formData.tiempoInvertidoHoras} onChange={handleChange}
                                 placeholder="Ej. 2.5"
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}
                             />
                         </Grid>
                     </Grid>
 
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 6 }}>
                         <Button 
-                            variant="outlined" color="inherit" onClick={() => navigate('/tareas')}
+                            variant="outlined" onClick={() => navigate('/tareas')}
                             startIcon={<ArrowBack />} disabled={saving}
-                            sx={{ color: 'text.secondary', borderColor: 'divider', borderRadius: 2, px: 3 }}
                         >
                             Cancelar
                         </Button>
                         <Button 
-                            type="submit" variant="contained" color="info"
+                            type="submit" variant="contained" color="primary"
                             startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <Save />}
                             disabled={saving}
-                            sx={{ borderRadius: 2, px: 4, fontWeight: 'bold' }}
                         >
                             {saving ? 'Guardando...' : 'Guardar Tarea'}
                         </Button>
                     </Box>
                 </Box>
-            </Paper>
+            </Card>
         </Box>
     );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-    Box, Typography, Paper, Button, TextField, MenuItem, Grid, Avatar, Divider, CircularProgress, Breadcrumbs, Link
+    Box, Typography, Card, Button, TextField, MenuItem, Grid, Avatar, Divider, CircularProgress, Breadcrumbs, Link
 } from '@mui/material';
 import { Save, ArrowBack, EditLocationAlt, AddLocationAlt, AccountTree } from '@mui/icons-material';
 import ubicacionService from '../services/ubicacionService';
@@ -120,8 +120,8 @@ export default function UbicacionFormPage() {
                 </Box>
             </Box>
 
-            {/* Contenedor del Formulario (Stitch Style) */}
-            <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: { xs: 3, md: 5 }, bgcolor: '#FFFFFF' }}>
+            {/* Contenedor del Formulario */}
+            <Card>
                 <Box component="form" onSubmit={handleSubmit} noValidate>
                     
                     <Typography variant="overline" color="text.secondary" fontWeight="700" sx={{ mb: 2, display: 'block' }}>
@@ -134,7 +134,6 @@ export default function UbicacionFormPage() {
                                 fullWidth label="Código Técnico" name="codigo" value={formData.codigo}
                                 onChange={handleChange} required disabled={isEditMode}
                                 helperText={isEditMode ? "El código es inmutable." : "Ej. PLANTA-01"}
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                             />
                         </Grid>
                         
@@ -142,7 +141,6 @@ export default function UbicacionFormPage() {
                             <TextField
                                 fullWidth select label="Estado Operativo" name="estado" value={formData.estado}
                                 onChange={handleChange} required
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                             >
                                 <MenuItem value="Operativo">Operativo</MenuItem>
                                 <MenuItem value="EnReparacion">En Reparación</MenuItem>
@@ -161,7 +159,6 @@ export default function UbicacionFormPage() {
                             <TextField
                                 fullWidth label="Nombre / Descripción" name="nombre" value={formData.nombre}
                                 onChange={handleChange} required placeholder="Ej. Línea de Ensamblaje Principal"
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                             />
                         </Grid>
 
@@ -169,7 +166,6 @@ export default function UbicacionFormPage() {
                             <TextField
                                 fullWidth label="Tipo de Ubicación" name="tipo" value={formData.tipo}
                                 onChange={handleChange} required placeholder="Ej. Edificio, Sector..."
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                             />
                         </Grid>
 
@@ -177,7 +173,6 @@ export default function UbicacionFormPage() {
                             <TextField
                                 fullWidth select label="Dependencia (Nodo Padre)" name="idPadre" value={formData.idPadre}
                                 onChange={handleChange} helperText="Deje en blanco si es nodo raíz."
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                             >
                                 <MenuItem value=""><em>-- Ninguna (Nodo Raíz) --</em></MenuItem>
                                 {ubicacionesDisponibles
@@ -194,9 +189,8 @@ export default function UbicacionFormPage() {
 
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 6 }}>
                         <Button 
-                            variant="outlined" color="inherit" onClick={() => navigate('/ubicaciones')}
+                            variant="outlined" onClick={() => navigate('/ubicaciones')}
                             startIcon={<ArrowBack />} disabled={saving}
-                            sx={{ color: 'text.secondary', borderColor: 'divider', borderRadius: 2, px: 3 }}
                         >
                             Cancelar
                         </Button>
@@ -204,13 +198,12 @@ export default function UbicacionFormPage() {
                             type="submit" variant="contained" color="primary"
                             startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <Save />}
                             disabled={saving}
-                            sx={{ borderRadius: 2, px: 4, fontWeight: 'bold' }}
                         >
                             {saving ? 'Guardando...' : 'Confirmar Guardado'}
                         </Button>
                     </Box>
                 </Box>
-            </Paper>
+            </Card>
         </Box>
     );
 }
