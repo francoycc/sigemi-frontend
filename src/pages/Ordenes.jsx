@@ -18,7 +18,6 @@ export default function Ordenes() {
     const [filteredOrdenes, setFilteredTareas] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Estados para los filtros 
     const [searchTerm, setSearchTerm] = useState('');
     const [tipoFiltro, setTipoFiltro] = useState('');
     const [estadoFiltro, setEstadoFiltro] = useState('');
@@ -43,11 +42,9 @@ export default function Ordenes() {
         cargarDatos();
     }, []);
 
-    // filtrado dinámico
     const aplicarFiltros = useCallback(() => {
         let temp = [...ordenes];
 
-        // Búsqueda por texto (Código o Descripción)
         if (searchTerm) {
             const lowerTerm = searchTerm.toLowerCase();
             temp = temp.filter(o => 
@@ -84,13 +81,6 @@ export default function Ordenes() {
         }
     };
 
-    // Helper seguro para IDs anidados o planos
-    const getId = (obj, prefijo) => {
-        if (!obj) return 'N/A';
-        return obj[`id${prefijo}`] || obj.id || 'N/A';
-    };
-
-    // Helpers visuales
     const getEstadoColor = (estado) => {
         switch (estado) {
             case 'Pendiente': return 'warning';
@@ -121,7 +111,6 @@ export default function Ordenes() {
 
     return (
         <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 2, md: 3 } }}>
-            
             <Breadcrumbs sx={{ mb: 3 }}>
                 <Link underline="hover" color="inherit" onClick={() => navigate('/dashboard')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <DashboardIcon sx={{ mr: 0.5 }} fontSize="inherit" /> Dashboard
@@ -129,7 +118,6 @@ export default function Ordenes() {
                 <Typography color="text.primary" fontWeight="bold">Órdenes de Trabajo</Typography>
             </Breadcrumbs>
 
-            {/* Cabecera Principal */}
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, mb: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar sx={{ bgcolor: 'primary.light', color: 'primary.main', width: 56, height: 56, boxShadow: 1 }} variant="rounded">
@@ -153,10 +141,10 @@ export default function Ordenes() {
                 </Button>
             </Box>
 
-            {/* BARRA DE FILTROS */}
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 3, mb: 3, bgcolor: '#FFFFFF' }}>
                 <Grid container spacing={2}>
-                    <Grid xs={12} sm={6} md={4}>
+                    {/* MUI v5 fix: explicit 'item' prop combined with sizing */}
+                    <Grid item xs={12} sm={6} md={4}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Buscar</Typography>
                         <TextField
                             fullWidth placeholder="Código o descripción..." value={searchTerm} 
@@ -167,7 +155,7 @@ export default function Ordenes() {
                         />
                     </Grid>
                     
-                    <Grid xs={12} sm={6} md={2.6}>
+                    <Grid item xs={12} sm={6} md={2.6}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Tipo</Typography>
                         <TextField fullWidth select value={tipoFiltro} onChange={(e) => setTipoFiltro(e.target.value)}>
                             <MenuItem value=""><em>Todos</em></MenuItem>
@@ -177,7 +165,7 @@ export default function Ordenes() {
                         </TextField>
                     </Grid>
 
-                    <Grid xs={12} sm={6} md={2.6}>
+                    <Grid item xs={12} sm={6} md={2.6}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Prioridad</Typography>
                         <TextField fullWidth select value={prioridadFiltro} onChange={(e) => setPrioridadFiltro(e.target.value)}>
                             <MenuItem value=""><em>Todas</em></MenuItem>
@@ -187,7 +175,7 @@ export default function Ordenes() {
                         </TextField>
                     </Grid>
 
-                    <Grid xs={12} sm={6} md={2.8}>
+                    <Grid item xs={12} sm={6} md={2.8}>
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Estado</Typography>
                         <TextField fullWidth select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value)}>
                             <MenuItem value=""><em>Todos los estados</em></MenuItem>
@@ -200,13 +188,12 @@ export default function Ordenes() {
                 </Grid>
             </Paper>
 
-            {/* TABLA PRINCIPAL */}
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden', bgcolor: '#FFFFFF' }}>
                 <TableContainer>
                     <Table sx={{ minWidth: 1000 }}>
                         <TableHead sx={{ bgcolor: 'grey.50' }}>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Código</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Código / ID</TableCell>
                                 <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Detalle & Tipo</TableCell>
                                 <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Equipo Objetivo</TableCell>
                                 <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Supervisor</TableCell>
@@ -221,14 +208,16 @@ export default function Ordenes() {
                                 <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6 }}><CircularProgress /></TableCell></TableRow>
                             ) : filteredOrdenes.length === 0 ? (
                                 <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary', fontWeight: 500 }}>No se encontraron órdenes de mantenimiento.</TableCell></TableRow>
-                            ) : filteredOrdenes.map((orden, index) => {
-                                const realId = getId(orden, 'Orden');
+                            ) : filteredOrdenes.map((orden) => {
+                                // Extract the exact properties based on OrdenDTO.java
+                                const ordenId = orden.idOrden;
+                                
                                 return (
-                                <TableRow key={`orden-${realId || index}`} hover sx={{ '&:hover .acciones-container': { opacity: 1 } }}>
+                                <TableRow key={`orden-${ordenId}`} hover sx={{ '&:hover .acciones-container': { opacity: 1 } }}>
                                     
                                     <TableCell>
                                         <Typography variant="body2" fontWeight="800" color="primary.main" sx={{ bgcolor: 'primary.50', display: 'inline-block', px: 1.5, py: 0.5, borderRadius: 1 }}>
-                                            {orden.codigoOrden || `#${realId}`}
+                                            {orden.codigoOrden ? orden.codigoOrden : `#${ordenId}`}
                                         </Typography>
                                     </TableCell>
                                     
@@ -245,25 +234,21 @@ export default function Ordenes() {
                                     </TableCell>
 
                                     <TableCell>
-                                        {orden.equipo || orden.equipoNombre ? (
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <PrecisionManufacturing fontSize="small" sx={{ color: 'text.disabled' }} />
-                                                <Typography variant="body2" fontWeight="600" color="text.primary">
-                                                    {orden.equipoNombre || orden.equipo?.nombre || 'Equipo asignado'}
-                                                </Typography>
-                                            </Box>
-                                        ) : <Typography variant="body2" color="text.disabled">Sin asignar</Typography>}
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <PrecisionManufacturing fontSize="small" sx={{ color: 'text.disabled' }} />
+                                            <Typography variant="body2" fontWeight="600" color="text.primary">
+                                                {orden.equipoNombre || 'Asignado'}
+                                            </Typography>
+                                        </Box>
                                     </TableCell>
 
                                     <TableCell>
-                                        {orden.supervisor || orden.supervisorNombre ? (
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Person fontSize="small" color="action" />
-                                                <Typography variant="body2" fontWeight="500">
-                                                    {orden.supervisorNombre || orden.supervisor?.username || 'Usuario'}
-                                                </Typography>
-                                            </Box>
-                                        ) : <Typography variant="body2" color="text.disabled">No asignado</Typography>}
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Person fontSize="small" color="action" />
+                                            <Typography variant="body2" fontWeight="500">
+                                                {orden.supervisorNombre || 'No asignado'}
+                                            </Typography>
+                                        </Box>
                                     </TableCell>
 
                                     <TableCell>
@@ -289,18 +274,18 @@ export default function Ordenes() {
                                     
                                     <TableCell align="right">
                                         <Box className="acciones-container" sx={{ opacity: { xs: 1, lg: 0 }, transition: 'opacity 0.2s ease-in-out', display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                                            <Tooltip title="Ver Panel de Orden (Tareas y Repuestos)">
-                                                <IconButton size="small" color="default" onClick={() => realId !== 'N/A' && navigate(`/ordenes/${realId}`)}>
+                                            <Tooltip title="Ver Detalle">
+                                                <IconButton size="small" color="default" onClick={() => navigate(`/ordenes/${ordenId}`)}>
                                                     <Visibility fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                             <Tooltip title="Editar Orden">
-                                                <IconButton size="small" color="primary" onClick={() => realId !== 'N/A' && navigate(`/ordenes/editar/${realId}`)}>
+                                                <IconButton size="small" color="primary" onClick={() => navigate(`/ordenes/editar/${ordenId}`)}>
                                                     <Edit fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                             <Tooltip title="Eliminar">
-                                                <IconButton size="small" color="error" onClick={() => handleDelete(realId)}>
+                                                <IconButton size="small" color="error" onClick={() => handleDelete(ordenId)}>
                                                     <Delete fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
