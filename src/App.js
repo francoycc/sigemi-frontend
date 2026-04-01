@@ -15,6 +15,7 @@ import EquipoDetalle from './pages/EquipoDetalle';
 import Tareas from './pages/Tareas';
 import TareaFormPage from './pages/TareaFormPage';
 import Ordenes from './pages/Ordenes';
+import OrdenFormPage from './pages/OrdenFormPage';
 
 function App() {
   return (
@@ -37,12 +38,16 @@ function App() {
              {/* RUTAS EQUIPOS */}
              <Route path="/equipos" element={<Equipos />} />
              <Route path="/equipos/nuevo" element={<EquipoFormPage />} />
-             <Route path="equipos/:id" element={<EquipoDetalle />} />
+             <Route path="/equipos/:id" element={<EquipoDetalle />} />
              <Route path="/equipos/editar/:id" element={<EquipoFormPage />} />
              <Route path="/equipos/ubicacion/:idUbicacion" element={<Equipos />} />
              {/* Placeholders */}
              <Route path="/ordenes" element={<Ordenes />} />
+             <Route path="/ordenes/nueva" element={<OrdenFormPage />} />
+             <Route path="/ordenes/:id" element={<TareaDetalle />} />
+             <Route path="/ordenes/editar/:id" element={<OrdenFormPage />} />
              <Route path="/tareas" element={<Tareas />} />
+             <Route path="/tareas/:id" element={<TareaDetalle />} />
             <Route path="/tareas/nueva" element={<TareaFormPage />} />
             <Route path="/tareas/editar/:id" element={<TareaFormPage />} />
              <Route path="/reportes" element={<h2>Reportes</h2>} />
