@@ -14,6 +14,7 @@ import EquipoFormPage from './pages/EquipoFormPage';
 import EquipoDetalle from './pages/EquipoDetalle';
 import Tareas from './pages/Tareas';
 import TareaFormPage from './pages/TareaFormPage';
+import Ordenes from './pages/Ordenes';
 
 function App() {
   return (
@@ -40,7 +41,7 @@ function App() {
              <Route path="/equipos/editar/:id" element={<EquipoFormPage />} />
              <Route path="/equipos/ubicacion/:idUbicacion" element={<Equipos />} />
              {/* Placeholders */}
-             <Route path="/ordenes" element={<h2>Listado de Órdenes</h2>} />
+             <Route path="/ordenes" element={<Ordenes />} />
              <Route path="/tareas" element={<Tareas />} />
             <Route path="/tareas/nueva" element={<TareaFormPage />} />
             <Route path="/tareas/editar/:id" element={<TareaFormPage />} />
