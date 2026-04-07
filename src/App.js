@@ -14,8 +14,10 @@ import EquipoFormPage from './pages/EquipoFormPage';
 import EquipoDetalle from './pages/EquipoDetalle';
 import Tareas from './pages/Tareas';
 import TareaFormPage from './pages/TareaFormPage';
+import TareaDetalle from './pages/TareaDetalle';
 import Ordenes from './pages/Ordenes';
 import OrdenFormPage from './pages/OrdenFormPage';
+import OrdenDetalle from './pages/OrdenDetalle';
 
 function App() {
   return (
@@ -44,7 +46,7 @@ function App() {
              {/* Placeholders */}
              <Route path="/ordenes" element={<Ordenes />} />
              <Route path="/ordenes/nueva" element={<OrdenFormPage />} />
-             <Route path="/ordenes/:id" element={<TareaDetalle />} />
+             <Route path="/ordenes/:id" element={<OrdenDetalle />} />
              <Route path="/ordenes/editar/:id" element={<OrdenFormPage />} />
              <Route path="/tareas" element={<Tareas />} />
              <Route path="/tareas/:id" element={<TareaDetalle />} />
