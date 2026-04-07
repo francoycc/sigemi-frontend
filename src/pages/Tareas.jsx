@@ -126,13 +126,6 @@ export default function Tareas() {
                         </Box>
                     </Box>
                 </Box>
-                <Button 
-                    variant="contained" color="info" startIcon={<Add />} 
-                    sx={{ px: 3, py: 1.2, borderRadius: 2, fontWeight: 'bold', boxShadow: 2 }}
-                    onClick={() => navigate('/tareas/nueva')}
-                >
-                    Nueva Tarea
-                </Button>
             </Box>
 
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 3, mb: 3, bgcolor: '#FFFFFF' }}>

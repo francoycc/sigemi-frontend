@@ -7,11 +7,15 @@ import { Save, ArrowBack, AssignmentTurnedIn, Assignment, Dashboard as Dashboard
 import tareaService from '../services/tareaService';
 import ordenService from '../services/ordenService';
 import usuarioService from '../services/usuarioService';
+import { useLocation } from 'react-router-dom';
 
 export default function TareaFormPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const isEditMode = Boolean(id);
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const ordenIdUrl = queryParams.get('ordenId');
 
     const [loading, setLoading] = useState(true); 
     const [saving, setSaving] = useState(false);        
@@ -40,6 +44,10 @@ export default function TareaFormPage() {
                 setOrdenes(ordData || []);
                 setTecnicos(usrData || []);
 
+                if (ordenIdUrl) {
+                    setFormData(prev => ({ ...prev, ordenId: ordenIdUrl }));
+                }
+                
                 if (isEditMode) {
                     const data = await tareaService.getById(id);
                     // Acceso directo a propiedades del DTO plano (sin anidamientos propensos a fallar)
@@ -191,10 +199,12 @@ export default function TareaFormPage() {
 
                     <Grid container spacing={3}>
                         <Grid item xs={12} sm={5}>
-                            <TextField
-                                fullWidth select label="Vincular a Orden" name="ordenId" 
-                                value={formData.ordenId} onChange={handleChange} required
-                                helperText="Orden de Mantenimiento padre"
+                            <TextField 
+                                fullWidth select 
+                                label="Orden" 
+                                name="ordenId" 
+                                value={formData.ordenId} 
+                                disabled={Boolean(ordenIdUrl) || isEditMode} 
                             >
                                 <MenuItem value=""><em>-- Seleccione Orden --</em></MenuItem>
                                 {ordenes.map(ord => (

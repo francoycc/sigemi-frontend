@@ -163,6 +163,57 @@ export default function OrdenDetalle() {
                 </Grid>
             </Grid>
 
+            {/* Tareas de la Orden */}
+            <Grid item xs={12}>
+                <Paper elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="overline" color="text.secondary" fontWeight="700">TAREAS DE LA ORDEN</Typography>
+                        <Button 
+                            variant="outlined" 
+                            size="small" 
+                            startIcon={<Add />}
+                            onClick={() => navigate(`/tareas/nueva?ordenId=${ordenId}`)}
+                        >
+                            Nueva Tarea
+                        </Button>
+                    </Box>
+                    <Divider sx={{ mb: 2 }} />
+                    
+                    {orden.tareas && orden.tareas.length > 0 ? (
+                        <TableContainer>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>Descripción</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>Técnico</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>Estado</TableCell>
+                                        <TableCell align="right">Acciones</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {orden.tareas.map((tarea) => (
+                                        <TableRow key={tarea.idTarea}>
+                                            <TableCell>{tarea.descripcion}</TableCell>
+                                            <TableCell>{tarea.tecnicoNombre}</TableCell>
+                                            <TableCell>
+                                                <Chip label={tarea.estado} size="small" variant="outlined" />
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <IconButton size="small" onClick={() => navigate(`/tareas/editar/${tarea.idTarea}`)}>
+                                                    <Edit fontSize="small" />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    ) : (
+                        <Typography variant="body2" color="text.secondary">No hay tareas registradas.</Typography>
+                    )}
+                </Paper>
+            </Grid>
+
             <Box sx={{ mt: 4 }}>
                 <Button variant="outlined" startIcon={<ArrowBack />} onClick={() => navigate('/ordenes')} sx={{ borderRadius: 2 }}>
                     Volver al Listado
