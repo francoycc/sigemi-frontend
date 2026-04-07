@@ -80,11 +80,27 @@ export default function OrdenFormPage() {
         e.preventDefault();
         setSaving(true);
 
-        // Preparamos el payload exacto que el Backend espera en el OrdenDTO
+        // Preparamos nombres del catálogo local
+        const equipoSeleccionado = equipos.find(eq => (eq.idEquipo || eq.id) === parseInt(formData.idEquipo));
+        const supervisorSeleccionado = supervisores.find(sup => (sup.idUsuario || sup.id) === parseInt(formData.idSupervisor));
+
+        // El Payload debe ser PLANO 
         const payload = {
-            ...formData,
+            idOrden: isEditMode ? parseInt(id) : null,
+            tipo: formData.tipo,
+            prioridad: formData.prioridad,
+            estado: formData.estado,
+            descripcion: formData.descripcion,
+            fechaCreacion: formData.fechaCreacion ? new Date(formData.fechaCreacion).toISOString() : null,
+            fechaInicio: formData.fechaInicio ? new Date(formData.fechaInicio).toISOString() : null,
+            fechaFin: formData.fechaFin ? new Date(formData.fechaFin).toISOString() : null,
+            
+            // Enviamos tanto los IDs como los Nombres
             idEquipo: formData.idEquipo === '' ? null : parseInt(formData.idEquipo),
-            idSupervisor: formData.idSupervisor === '' ? null : parseInt(formData.idSupervisor)
+            equipoNombre: equipoSeleccionado ? equipoSeleccionado.nombre : null,
+            
+            idSupervisor: formData.idSupervisor === '' ? null : parseInt(formData.idSupervisor),
+            supervisorNombre: supervisorSeleccionado ? supervisorSeleccionado.username : null
         };
 
         try {
@@ -95,9 +111,9 @@ export default function OrdenFormPage() {
             }
             navigate('/ordenes'); 
         } catch (err) {
-            console.error("Error devuelto por el servidor:", err.response?.data);
-            const errorMsg = err.response?.data?.message || err.response?.data?.error || "Verifique los campos requeridos.";
-            alert(`Error al guardar: ${errorMsg}`);
+            console.error("Error en servidor:", err);
+            const errorMsg = err.response?.data?.message || err.response?.data?.error || "Verifique los campos.";
+            alert(`Error al guardar la orden: ${errorMsg}`);
             setSaving(false);
         }
     };
