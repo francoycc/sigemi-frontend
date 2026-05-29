@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-    Box, Typography, Paper, Button, Table, TableBody, 
+    Box, Typography, Paper, Table, TableBody, 
     TableCell, TableContainer, TableHead, TableRow, Chip, 
     IconButton, Tooltip, CircularProgress, Avatar, Breadcrumbs, Link, TextField, Autocomplete, Grid, MenuItem
 } from '@mui/material';
 import { 
-    Add, Edit, Delete, Assignment, Dashboard as DashboardIcon, Person, ConfirmationNumber,
+    Edit, Delete, Assignment, Dashboard as DashboardIcon, Person, ConfirmationNumber,
     CalendarMonth, Build, QueryStats, Settings, Visibility
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -126,6 +126,7 @@ export default function Tareas() {
                         </Box>
                     </Box>
                 </Box>
+
             </Box>
 
             <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 3, mb: 3, bgcolor: '#FFFFFF' }}>

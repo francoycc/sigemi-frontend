@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
     Box, Typography, Paper, Grid, Button, CircularProgress, 
-    Chip, Divider, Breadcrumbs, Link, Avatar
+    Chip, Divider, Breadcrumbs, Link, Avatar, IconButton,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow // <-- Componentes de Tabla agregados
 } from '@mui/material';
 import { 
     ArrowBack, Edit, Dashboard as DashboardIcon, ConfirmationNumber,
-    EventNote, PrecisionManufacturing, Person, Assignment
+    EventNote, PrecisionManufacturing, Person, Add // <-- Icono Add agregado
 } from '@mui/icons-material';
 import ordenService from '../services/ordenService';
 
