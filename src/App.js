@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ThemeProvider, CssBaseline } from '@mui/material';
 
 import theme from './theme/theme';
+//import UserProfile from './pages/UserProfile';
+import ProtectedRoute from './components/ProtectedRoute';
+
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Ubicaciones from './pages/Ubicaciones';
@@ -18,6 +21,20 @@ import TareaDetalle from './pages/TareaDetalle';
 import Ordenes from './pages/Ordenes';
 import OrdenFormPage from './pages/OrdenFormPage';
 import OrdenDetalle from './pages/OrdenDetalle';
+// Nuevas páginas para el técnico
+import MisTareas from './pages/MisTareas';
+import PanelEstadoTareas from './pages/PanelEstadoTareas';
+
+function UserProfileFallback() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return (
+        <div style={{ padding: '24px' }}>
+            <h2>Perfil del Usuario</h2>
+            <p><strong>Usuario:</strong> {user?.username}</p>
+            <p><strong>Rol Asignado:</strong> {user?.rol}</p>
+        </div>
+    );
+}
 
 function App() {
   return (
@@ -25,36 +42,61 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} /> 
-          <Route path="/login" element={<Login />} />
-          
-          <Route element={<MainLayout />}>
-             <Route path="/dashboard" element={<Dashboard />} />
-             
-             {/* RUTAS UBICACIONES*/} 
-             <Route path="/ubicaciones" element={<Ubicaciones />} />
-             <Route path="/ubicaciones/nueva" element={<UbicacionFormPage />} />
-             <Route path="/ubicaciones/:id" element={<UbicacionDetalle />} />  
-             <Route path="/ubicaciones/editar/:id" element={<UbicacionFormPage />} />
-             <Route path="/ubicaciones/:id/equipos" element={<Equipos />} />
-             {/* RUTAS EQUIPOS */}
-             <Route path="/equipos" element={<Equipos />} />
-             <Route path="/equipos/nuevo" element={<EquipoFormPage />} />
-             <Route path="/equipos/:id" element={<EquipoDetalle />} />
-             <Route path="/equipos/editar/:id" element={<EquipoFormPage />} />
-             <Route path="/equipos/ubicacion/:idUbicacion" element={<Equipos />} />
-             {/* Placeholders */}
-             <Route path="/ordenes" element={<Ordenes />} />
-             <Route path="/ordenes/nueva" element={<OrdenFormPage />} />
-             <Route path="/ordenes/:id" element={<OrdenDetalle />} />
-             <Route path="/ordenes/editar/:id" element={<OrdenFormPage />} />
-             <Route path="/tareas" element={<Tareas />} />
-             <Route path="/tareas/:id" element={<TareaDetalle />} />
-            <Route path="/tareas/nueva" element={<TareaFormPage />} />
-            <Route path="/tareas/editar/:id" element={<TareaFormPage />} />
-             <Route path="/reportes" element={<h2>Reportes</h2>} />
-          </Route>
-        </Routes>
+                    {/* Ruta Pública de Autenticación */}
+                    <Route path="/login" element={<Login />} />
+
+                    {/* =======================================================
+                        RUTAS COMUNES PROTEGIDAS (Cualquier rol autenticado)
+                       ======================================================= */}
+                    <Route element={<ProtectedRoute rolesPermitidos={['ADMIN', 'SUPERVISOR', 'OPERARIO']} />}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        {
+                        /*<Route path="/profile" element={<UserProfileFallback />} />
+                          */}
+                          
+                    </Route>
+
+                    {/* =======================================================
+                        RUTAS EXCLUSIVAS DE GESTIÓN (Supervisor y Admin)
+                       ======================================================= */}
+                    <Route element={<ProtectedRoute rolesPermitidos={['SUPERVISOR', 'ADMIN']} />}>
+                        {/* Control de Ubicaciones Técnicas */}
+                        <Route path="/ubicaciones" element={<Ubicaciones />} />
+                        <Route path="/ubicaciones/nueva" element={<UbicacionFormPage />} />
+                        <Route path="/ubicaciones/editar/:id" element={<UbicacionFormPage />} />
+                        <Route path="/ubicaciones/:id" element={<UbicacionDetalle />} />
+
+                        {/* Control de Equipos Industriales */}
+                        <Route path="/equipos" element={<Equipos />} />
+                        <Route path="/equipos/nueva" element={<EquipoFormPage />} />
+                        <Route path="/equipos/editar/:id" element={<EquipoFormPage />} />
+                        <Route path="/equipos/:id" element={<EquipoDetalle />} />
+
+                        {/* Planificación de Órdenes de Mantenimiento */}
+                        <Route path="/ordenes" element={<Ordenes />} />
+                        <Route path="/ordenes/nueva" element={<OrdenFormPage />} />
+                        <Route path="/ordenes/editar/:id" element={<OrdenFormPage />} />
+                        <Route path="/ordenes/:id" element={<OrdenDetalle />} />
+
+                        {/* Monitoreo General de Tareas */}
+                        <Route path="/tareas" element={<Tareas />} />
+                        <Route path="/tareas/nueva" element={<TareaFormPage />} />
+                        <Route path="/tareas/editar/:id" element={<TareaFormPage />} />
+                        <Route path="/tareas/:id" element={<TareaDetalle />} />
+                    </Route>
+
+                    {/* =======================================================
+                        RUTAS EXCLUSIVAS OPERATIVAS (Técnico / Operario)
+                       ======================================================= */}
+                    <Route element={<ProtectedRoute rolesPermitidos={['OPERARIO', 'SUPERVISOR']} />}>
+                        {/* Cola de trabajo y Panel de ejecución del Técnico */}
+                        <Route path="/tecnico/tareas" element={<MisTareas />} />
+                        <Route path="/tecnico/tarea/:id" element={<PanelEstadoTareas />} />
+                    </Route>
+
+                    {/* Redirección por defecto ante cualquier ruta inválida o inexistente */}
+                    <Route path="*" element={<Navigate to="/login" replace />} />
+                </Routes>
       </Router>
     </ThemeProvider>
   );
