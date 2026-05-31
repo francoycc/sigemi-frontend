@@ -1,151 +1,191 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
-    Drawer, List, ListItem, ListItemButton, ListItemIcon, 
-    ListItemText, Toolbar, Typography, Divider, Box, Avatar,
-    IconButton
+    Box, List, ListItem, ListItemButton, his, ListItemText, 
+    Divider, Typography, Avatar, ListItemIcon
 } from '@mui/material';
 import { 
-    Dashboard, Inventory, Assignment, Build, BarChart, Settings, 
-    Place 
+    Dashboard as DashboardIcon, 
+    LocationOn, 
+    PrecisionManufacturing, 
+    ConfirmationNumber, 
+    Build, 
+    Logout, 
+    AccountCircle 
 } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
 
-const DRAWER_WIDTH = 260; 
-
-// Colores corporativos
-const SIDEBAR_BG = '#1976d2'; // Azul/Celeste corporativo primario (ajusta este hex si quieres un tono exacto)
-const SIDEBAR_TEXT = '#ffffff'; // Texto blanco
-const SIDEBAR_TEXT_MUTED = 'rgba(255, 255, 255, 0.7)'; // Texto secundario blanco translúcido
-const SIDEBAR_HOVER = 'rgba(255, 255, 255, 0.1)'; // Hover sutil
-const SIDEBAR_ACTIVE = 'rgba(255, 255, 255, 0.2)'; // Elemento seleccionado
-
-const MENU_ITEMS = [
-    { text: 'Panel de Control', icon: <Dashboard />, path: '/dashboard' },
-    { text: 'Ubicaciones Técnicas', icon: <Place />, path: '/ubicaciones' },
-    { text: 'Inventario de Equipos', icon: <Inventory />, path: '/equipos' },
-    { text: 'Órdenes de Trabajo', icon: <Assignment />, path: '/ordenes' },
-    { text: 'Tareas Técnicas', icon: <Build />, path: '/tareas' },
-    { text: 'Reportes y KPI', icon: <BarChart />, path: '/reportes' },
-];
-
-export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
+export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
-  
+
+    // Extraemos datos normalizados de la sesión activa
     const user = JSON.parse(localStorage.getItem('user')) || {};
-    
-    // Extraemos el rol. Si viene, lo pasamos a MAYÚSCULAS para que coincida 
     const userRol = (user?.rol || user?.role || 'OPERARIO').toUpperCase(); 
-    const username = user?.username || user?.nombre || 'Operario'; 
-    
-    const handleNavigate = (path) => {
-        navigate(path);
-        if (mobileOpen && handleDrawerToggle) handleDrawerToggle();
+    const username = user?.username || user?.nombre || 'Operario';
+
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        navigate('/login');
     };
 
-    const isSelected = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
+    const isOptionActive = (path) => location.pathname.startsWith(path);
 
-    const drawerContent = (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: SIDEBAR_BG, color: SIDEBAR_TEXT }}>
-            
-            {/* Logo y Cabecera */}
-            <Toolbar sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-                <Typography variant="h5" fontWeight="900" sx={{ letterSpacing: 1 }}>
-                    SIGEMI <Typography component="span" variant="caption" sx={{ color: SIDEBAR_TEXT_MUTED, ml: 0.5 }}>App</Typography>
-                </Typography>
-            </Toolbar>
-            
-            <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.1)' }} />
+    const itemButtonStyle = (path) => ({
+        borderRadius: 2,
+        mb: 0.5,
+        mx: 1,
+        width: 'calc(100% - 16px)',
+        backgroundColor: isOptionActive(path) ? 'primary.light' : 'transparent',
+        color: isOptionActive(path) ? 'primary.main' : 'text.secondary',
+        '&:hover': {
+            backgroundColor: isOptionActive(path) ? 'primary.light' : 'grey.100',
+            color: isOptionActive(path) ? 'primary.main' : 'text.primary',
+        }
+    });
 
-            {/* Menú de Navegación */}
-            <Box sx={{ flexGrow: 1, p: 2 }}>
-                <Typography variant="caption" fontWeight="700" textTransform="uppercase" display="block" sx={{ mb: 1, ml: 1.5, color: SIDEBAR_TEXT_MUTED }}>
-                    Menú Principal
-                </Typography>
-                
-                <List sx={{ pt: 0 }}>
-                    {MENU_ITEMS.map((item) => {
-                        const active = isSelected(item.path);
-                        return (
-                            <ListItem key={item.text} disablePadding sx={{ mb: 0.8 }}>
-                                <ListItemButton 
-                                    onClick={() => handleNavigate(item.path)}
-                                    sx={{ 
-                                        borderRadius: 2, 
-                                        bgcolor: active ? SIDEBAR_ACTIVE : 'transparent',
-                                        '&:hover': { bgcolor: active ? SIDEBAR_ACTIVE : SIDEBAR_HOVER },
-                                        transition: 'all 0.2s ease-in-out'
-                                    }}
-                                >
-                                    <ListItemIcon sx={{ 
-                                        color: active ? SIDEBAR_TEXT : SIDEBAR_TEXT_MUTED, 
-                                        minWidth: 40 
-                                    }}>
-                                        {item.icon}
-                                    </ListItemIcon>
-                                    <ListItemText 
-                                        primary={item.text} 
-                                        primaryTypographyProps={{ 
-                                            fontSize: '0.9rem', 
-                                            fontWeight: active ? 700 : 500,
-                                            color: active ? SIDEBAR_TEXT : SIDEBAR_TEXT_MUTED 
-                                        }} 
-                                    />
-                                </ListItemButton>
-                            </ListItem>
-                        );
-                    })}
-                </List>
-            </Box>
-
-            <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
-
-            {/* Perfil de Usuario Footer */}
-            <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'rgba(0,0,0,0.1)' }}>
-                <Avatar sx={{ bgcolor: '#ffffff', color: SIDEBAR_BG, fontWeight: 'bold' }}>F</Avatar>
-                <Box>
-                    <Typography variant="subtitle2" fontWeight="700">Franco</Typography>
-                    <Typography variant="caption" sx={{ color: SIDEBAR_TEXT_MUTED }}>Administrador</Typography>
-                </Box>
-                <IconButton 
-                    size="small" 
-                    sx={{ ml: 'auto', color: SIDEBAR_TEXT_MUTED, '&:hover': { color: SIDEBAR_TEXT } }} 
-                    onClick={() => navigate('/login')}
-                >
-                    <Settings fontSize="small" />
-                </IconButton>
-            </Box>
-
-        </Box>
-    );
+    const itemIconStyle = (path) => ({
+        color: isOptionActive(path) ? 'primary.main' : 'text.secondary',
+        minWidth: 40
+    });
 
     return (
-        <Box component="nav" sx={{ width: { lg: DRAWER_WIDTH }, flexShrink: { lg: 0 } }}>
-            {/* Drawer Móvil */}
-            <Drawer
-                variant="temporary"
-                open={mobileOpen}
-                onClose={handleDrawerToggle}
-                ModalProps={{ keepMounted: true }}
-                sx={{ 
-                    display: { xs: 'block', lg: 'none' }, 
-                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH, border: 'none' } 
-                }}
-            >
-                {drawerContent}
-            </Drawer>
+        <Box sx={{ 
+            width: 260, 
+            height: '100vh', 
+            bgcolor: '#FFFFFF', 
+            borderRight: '1px solid', 
+            borderColor: 'divider',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
             
-            {/* Drawer Escritorio */}
-            <Drawer
-                variant="permanent"
-                open
-                sx={{ 
-                    display: { xs: 'none', lg: 'block' }, 
-                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH, borderRight: 'none' } 
-                }}
-            >
-                {drawerContent}
-            </Drawer>
+            {/* Cabecera Sidebar */}
+            <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40, fontWeight: 'bold' }}>
+                    SG
+                </Avatar>
+                <Box>
+                    <Typography variant="h6" fontWeight="800" color="text.primary" sx={{ lineHeight: 1.2 }}>
+                        SIGEMI
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" fontWeight="600">
+                        Mantenimiento Industrial
+                    </Typography>
+                </Box>
+            </Box>
+
+            <Divider sx={{ mb: 2 }} />
+
+            {/* Listado de Opciones del Menú */}
+            <List sx={{ flexGrow: 1, px: 1 }}>
+                
+                {/* Opción Común */}
+                <ListItem disablePadding>
+                    <ListItemButton sx={itemButtonStyle('/dashboard')} onClick={() => navigate('/dashboard')}>
+                        <ListItemIcon sx={itemIconStyle('/dashboard')}>
+                            <DashboardIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Dashboard" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
+                    </ListItemButton>
+                </ListItem>
+
+                {/* Bloque para SUPERVISOR y ADMINISTRADOR  */}
+                {(userRol === 'SUPERVISOR' || userRol === 'ADMINISTRADOR') && (
+                    <>
+                        <Typography variant="overline" color="text.disabled" fontWeight="700" sx={{ px: 3, mt: 2, mb: 0.5, display: 'block' }}>
+                            Planificación
+                        </Typography>
+
+                        <ListItem disablePadding>
+                            <ListItemButton sx={itemButtonStyle('/ubicaciones')} onClick={() => navigate('/ubicaciones')}>
+                                <ListItemIcon sx={itemIconStyle('/ubicaciones')}>
+                                    <LocationOn />
+                                </ListItemIcon>
+                                <ListItemText primary="Ubicaciones Técnicas" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
+                            </ListItemButton>
+                        </ListItem>
+
+                        <ListItem disablePadding>
+                            <ListItemButton sx={itemButtonStyle('/equipos')} onClick={() => navigate('/equipos')}>
+                                <ListItemIcon sx={itemIconStyle('/equipos')}>
+                                    <PrecisionManufacturing />
+                                </ListItemIcon>
+                                <ListItemText primary="Equipos" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
+                            </ListItemButton>
+                        </ListItem>
+
+                        <ListItem disablePadding>
+                            <ListItemButton sx={itemButtonStyle('/ordenes')} onClick={() => navigate('/ordenes')}>
+                                <ListItemIcon sx={itemIconStyle('/ordenes')}>
+                                    <ConfirmationNumber />
+                                </ListItemIcon>
+                                <ListItemText primary="Órdenes de Trabajo" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
+                            </ListItemButton>
+                        </ListItem>
+
+                        <ListItem disablePadding>
+                            <ListItemButton sx={itemButtonStyle('/tareas')} onClick={() => navigate('/tareas')}>
+                                <ListItemIcon sx={itemIconStyle('/tareas')}>
+                                    <Build />
+                                </ListItemIcon>
+                                <ListItemText primary="Monitoreo Tareas" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
+                            </ListItemButton>
+                        </ListItem>
+                    </>
+                )}
+
+                {/* Bloque Operativo para OPERARIO y SUPERVISOR */}
+                {(userRol === 'OPERARIO' || userRol === 'SUPERVISOR') && (
+                    <>
+                        <Typography variant="overline" color="text.disabled" fontWeight="700" sx={{ px: 3, mt: 2, mb: 0.5, display: 'block' }}>
+                            Ejecución Técnica
+                        </Typography>
+
+                        <ListItem disablePadding>
+                            <ListItemButton sx={itemButtonStyle('/tecnico/tareas')} onClick={() => navigate('/tecnico/tareas')}>
+                                <ListItemIcon sx={itemIconStyle('/tecnico/tareas')}>
+                                    <Build color="info" />
+                                </ListItemIcon>
+                                <ListItemText primary="Mi Cola de Trabajo" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
+                            </ListItemButton>
+                        </ListItem>
+                    </>
+                )}
+            </List>
+
+            <Divider />
+
+            {/* Panel de Perfil de Usuario Inferior */}
+            <Box sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5, px: 1 }}>
+                    <Avatar sx={{ bgcolor: userRol === 'OPERARIO' ? 'info.main' : 'primary.main', width: 36, height: 36 }}>
+                        <AccountCircle />
+                    </Avatar>
+                    <Box sx={{ overflow: 'hidden' }}>
+                        <Typography variant="body2" fontWeight="700" color="text.primary" noWrap>
+                            {username}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" fontWeight="600" sx={{ display: 'block' }}>
+                            Rol: {userRol}
+                        </Typography>
+                    </Box>
+                </Box>
+
+                <ListItemButton 
+                    onClick={handleLogout}
+                    sx={{ 
+                        borderRadius: 2, 
+                        color: 'error.main',
+                        '&:hover': { backgroundColor: 'error.light', color: 'error.dark' }
+                    }}
+                >
+                    <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
+                        <Logout />
+                    </ListItemIcon>
+                    <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontWeight: '700', variant: 'body2' }} />
+                </ListItemButton>
+            </Box>
+
         </Box>
     );
 }

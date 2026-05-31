@@ -49,7 +49,7 @@ function App() {
                     {/* =======================================================
                         RUTAS COMUNES PROTEGIDAS (Cualquier rol autenticado)
                        ======================================================= */}
-                    <Route element={<ProtectedRoute rolesPermitidos={['ADMIN', 'SUPERVISOR', 'OPERARIO']} />}>
+                    <Route element={<ProtectedRoute rolesPermitidos={['ADMINISTRADOR', 'SUPERVISOR', 'OPERARIO']} />}>
                         <Route path="/dashboard" element={<Dashboard />} />
                         {
                         /*<Route path="/profile" element={<UserProfileFallback />} />
@@ -60,7 +60,7 @@ function App() {
                     {/* =======================================================
                         RUTAS EXCLUSIVAS DE GESTIÓN (Supervisor y Admin)
                        ======================================================= */}
-                    <Route element={<ProtectedRoute rolesPermitidos={['SUPERVISOR', 'ADMIN']} />}>
+                    <Route element={<ProtectedRoute rolesPermitidos={['SUPERVISOR', 'ADMINISTRADOR']} />}>
                         {/* Control de Ubicaciones Técnicas */}
                         <Route path="/ubicaciones" element={<Ubicaciones />} />
                         <Route path="/ubicaciones/nueva" element={<UbicacionFormPage />} />

@@ -1,19 +1,26 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import MainLayout from './MainLayout';
 
 export default function ProtectedRoute({ rolesPermitidos }) {
     const user = JSON.parse(localStorage.getItem('user'));
 
     if (!user) {
-        // Si no está logueado, al login
         return <Navigate to="/login" replace />;
     }
 
-    if (rolesPermitidos && !rolesPermitidos.includes(user.rol)) {
-        // Si está logueado pero no tiene el rol requerido, redirige al Dashboard seguro
+    // Convertimos a mayúsculas para evitar problemas de casting con la BD
+    const userRol = (user?.rol || user?.role || '').toUpperCase();
+
+    if (rolesPermitidos && !rolesPermitidos.includes(userRol)) {
+        // Si el rol no tiene permisos, se lo devuelve al Dashboard común de forma segura
+        console.warn(`[SEGURIDAD] Intento de acceso no autorizado. Rol: ${userRol}. Requerido: ${rolesPermitidos}`);
         return <Navigate to="/dashboard" replace />;
     }
 
-    // Si cumple todo, renderiza el componente hijo
-    return <Outlet/>;
+    return (
+        <MainLayout>
+            <Outlet />
+        </MainLayout>
+    );
 }
