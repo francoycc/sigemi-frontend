@@ -31,6 +31,12 @@ const MENU_ITEMS = [
 export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
     const navigate = useNavigate();
     const location = useLocation();
+  
+    const user = JSON.parse(localStorage.getItem('user')) || {};
+    
+    // Extraemos el rol. Si viene, lo pasamos a MAYÚSCULAS para que coincida 
+    const userRol = (user?.rol || user?.role || 'OPERARIO').toUpperCase(); 
+    const username = user?.username || user?.nombre || 'Operario'; 
     
     const handleNavigate = (path) => {
         navigate(path);

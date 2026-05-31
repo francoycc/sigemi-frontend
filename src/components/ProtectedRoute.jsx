@@ -15,5 +15,5 @@ export default function ProtectedRoute({ rolesPermitidos }) {
     }
 
     // Si cumple todo, renderiza el componente hijo
-    return <Outlet />;
+    return <Outlet/>;
 }
