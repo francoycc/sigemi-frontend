@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
+import { AuthProvider } from './context/AuthContext';
 
 import theme from './theme/theme';
 //import UserProfile from './pages/UserProfile';
@@ -42,7 +43,8 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <Routes>
+        <AuthProvider>
+            <Routes>
                     {/* Ruta Pública de Autenticación */}
                     <Route path="/login" element={<Login />} />
 
@@ -98,6 +100,7 @@ function App() {
                     {/* Redirección por defecto ante cualquier ruta inválida o inexistente */}
                     <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
+            </AuthProvider>
       </Router>
     </ThemeProvider>
   );

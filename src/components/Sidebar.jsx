@@ -13,13 +13,14 @@ import {
     Logout, 
     AccountCircle 
 } from '@mui/icons-material';
+import { useAuth } from '../context/AuthContext'; 
 
 export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
 
     // Extraemos datos normalizados de la sesión activa
-    const user = JSON.parse(localStorage.getItem('user')) || {};
+    const { user, logout } = useAuth(); 
     const userRol = (user?.rol || user?.role || 'OPERARIO').toUpperCase(); 
     const username = user?.username || user?.nombre || 'Operario';
 
@@ -171,18 +172,9 @@ export default function Sidebar() {
                     </Box>
                 </Box>
 
-                <ListItemButton 
-                    onClick={handleLogout}
-                    sx={{ 
-                        borderRadius: 2, 
-                        color: 'error.main',
-                        '&:hover': { backgroundColor: 'error.light', color: 'error.dark' }
-                    }}
-                >
-                    <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
-                        <Logout />
-                    </ListItemIcon>
-                    <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontWeight: '700', variant: 'body2' }} />
+                <ListItemButton onClick={logout} sx={{ color: 'error.main' }}>
+                    <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}><Logout /></ListItemIcon>
+                     <ListItemText primary="Cerrar Sesión" />
                 </ListItemButton>
             </Box>
 
