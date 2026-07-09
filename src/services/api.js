@@ -11,10 +11,17 @@ const api = axios.create({
 // 1. Interceptor de Peticiones (Request) 
 api.interceptors.request.use(
     (config) => {
-        // Extraemos el token puro que guardó el AuthContext
-        const token = localStorage.getItem('token');
+        // Obtenemos el token directamente
+        let token = localStorage.getItem('token');
+        
         if (token) {
+            // Limpiamos comillas extrañas por las dudas (un bug muy común al migrar)
+            token = token.replace(/^"(.*)"$/, '$1'); 
+            
             config.headers.Authorization = `Bearer ${token}`;
+            console.log("[AXIOS] Token inyectado en petición a:", config.url); // Log de depuración
+        } else {
+            console.warn("[AXIOS] CUIDADO: Petición enviada SIN token a:", config.url);
         }
         return config;
     },
