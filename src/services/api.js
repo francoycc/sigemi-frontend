@@ -8,24 +8,23 @@ const api = axios.create({
     }
 });
 
-// Interceptor de Peticiones (Request)
+// 1. Interceptor de Peticiones (Request) 
 api.interceptors.request.use(
     (config) => {
-        // Inyección automática de credenciales (Basic Auth actual, preparable para JWT)
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user && user.authdata) {
-            config.headers.Authorization = `Basic ${user.authdata}`;
+        // Extraemos el token puro que guardó el AuthContext
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-// Interceptor de Respuestas (Response)
+// 2. Interceptor de Respuestas (Response) 
 api.interceptors.response.use(
     (response) => {
-        // Si devuelve un objeto Pageable, extraemos 'content'
-        // Si devuelve un List directo, lo dejamos intacto.
+        // Si el controlador de Spring Boot devuelve un Pageable, extraemos el 'content' automáticamente
         if (response.data && response.data.content !== undefined) {
             response.data = response.data.content;
         }
@@ -37,11 +36,15 @@ api.interceptors.response.use(
             const { status } = error.response;
             
             if (status === 401) {
-                console.error('[API] No autorizado. Sesión expirada o credenciales inválidas.');
+                console.error('[API] No autorizado. Sesión expirada o token inválido.');
+                
+                // Limpieza total del almacenamiento para evitar bucles infinitos
                 localStorage.removeItem('user');
-                window.location.href = '/login'; // Redirección forzada segura
+                localStorage.removeItem('token'); 
+                
+                window.location.href = '/login'; 
             } else if (status === 403) {
-                console.error('[API] Acceso denegado a este recurso.');
+                console.error('[API] Acceso denegado a este recurso. Verifique los permisos del rol.');
             } else if (status === 400) {
                 console.warn('[API] Bad Request: Error de validación en DTOs de Spring Boot.', error.response.data);
             } else if (status >= 500) {

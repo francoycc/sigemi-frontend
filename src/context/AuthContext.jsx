@@ -19,17 +19,21 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // Función global para Iniciar Sesión
-    const login = (userData) => {
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-        navigate('/dashboard'); // Redirige al entrar
+    const login = (authData) => {
+        // Separamos limpiamente el token de la entidad de usuario
+        localStorage.setItem('token', authData.token);
+        localStorage.setItem('user', JSON.stringify(authData.user));
+        
+        setUser(authData.user);
+        navigate('/dashboard');
     };
 
     // Función global para Cerrar Sesión
     const logout = () => {
+        localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
-        navigate('/login'); // Lo manda afuera
+        navigate('/login');
     };
 
     if (loading) return null; // Evita parpadeos mientras lee el localStorage

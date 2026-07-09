@@ -18,8 +18,6 @@ import { useAuth } from '../context/AuthContext';
 export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
-    
-    // Extracción limpia desde el AuthContext
     const { user, logout } = useAuth(); 
 
     const userRol = (user?.rol || user?.role || 'OPERARIO').toUpperCase(); 
@@ -59,7 +57,8 @@ export default function Sidebar() {
 
             <List sx={{ flexGrow: 1, px: 1 }}>
                 <ListItem disablePadding>
-                    <ListItemButton sx={itemButtonStyle('/dashboard')} onClick={() => navigate('/dashboard')}>
+                    <ListItemButton sx={itemButtonStyle('/dashboard')} 
+                        onClick={() => navigate('/dashboard')}>
                         <ListItemIcon sx={itemIconStyle('/dashboard')}><DashboardIcon /></ListItemIcon>
                         <ListItemText primary="Dashboard" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
                     </ListItemButton>
@@ -67,49 +66,34 @@ export default function Sidebar() {
 
                 {(userRol === 'SUPERVISOR' || userRol === 'ADMINISTRADOR') && (
                     <>
-                        <Typography variant="overline" color="text.disabled" fontWeight="700" sx={{ px: 3, mt: 2, mb: 0.5, display: 'block' }}>Planificación</Typography>
-                        
+                        <Typography variant="overline" color="text.disabled" fontWeight="700" 
+                            sx={{ px: 3, mt: 2, mb: 0.5, display: 'block' }}>Planificación</Typography>
                         <ListItem disablePadding>
-                            <ListItemButton sx={
-                                itemButtonStyle('/ubicaciones')} 
+                            <ListItemButton sx={itemButtonStyle('/ubicaciones')} 
                                 onClick={() => navigate('/ubicaciones')}>
-                                    <ListItemIcon sx={
-                                        itemIconStyle('/ubicaciones')}><LocationOn />
-                                    </ListItemIcon>
-                                <ListItemText primary="Ubicaciones Técnicas" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
+                                    <ListItemIcon sx={itemIconStyle('/ubicaciones')}><LocationOn /></ListItemIcon>
+                                    <ListItemText primary="Ubicaciones Técnicas" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
                             </ListItemButton>
                         </ListItem>
-                        
                         <ListItem disablePadding>
-                            <ListItemButton sx={
-                                itemButtonStyle('/equipos')} 
+                            <ListItemButton sx={itemButtonStyle('/equipos')} 
                                 onClick={() => navigate('/equipos')}>
-                                    <ListItemIcon sx={
-                                        itemIconStyle('/equipos')}><PrecisionManufacturing />
-                                    </ListItemIcon>
-                                <ListItemText primary="Equipos" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
+                                    <ListItemIcon sx={itemIconStyle('/equipos')}><PrecisionManufacturing /></ListItemIcon>
+                                    <ListItemText primary="Equipos" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
                             </ListItemButton>
                         </ListItem>
-                        
                         <ListItem disablePadding>
-                            <ListItemButton sx={
-                                itemButtonStyle('/ordenes')} 
+                            <ListItemButton sx={itemButtonStyle('/ordenes')} 
                                 onClick={() => navigate('/ordenes')}>
-                                    <ListItemIcon sx={
-                                        itemIconStyle('/ordenes')}><ConfirmationNumber />
-                                    </ListItemIcon>
-                                <ListItemText primary="Órdenes de Trabajo" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
+                                    <ListItemIcon sx={itemIconStyle('/ordenes')}><ConfirmationNumber /></ListItemIcon>
+                                    <ListItemText primary="Órdenes de Trabajo" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
                             </ListItemButton>
                         </ListItem>
-                        
                         <ListItem disablePadding>
-                            <ListItemButton sx={
-                                itemButtonStyle('/tareas')} 
+                            <ListItemButton sx={itemButtonStyle('/tareas')} 
                                 onClick={() => navigate('/tareas')}>
-                                    <ListItemIcon sx={
-                                        itemIconStyle('/tareas')}><Build />
-                                    </ListItemIcon>
-                                <ListItemText primary="Monitoreo Tareas" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
+                                    <ListItemIcon sx={itemIconStyle('/tareas')}><Build /></ListItemIcon>
+                                    <ListItemText primary="Monitoreo Tareas" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
                             </ListItemButton>
                         </ListItem>
                     </>
@@ -117,19 +101,8 @@ export default function Sidebar() {
 
                 {(userRol === 'OPERARIO' || userRol === 'SUPERVISOR') && (
                     <>
-                        <Typography variant="overline" color="text.disabled" fontWeight="700" sx={{ 
-                            px: 3, mt: 2, mb: 0.5, display: 'block' }}>Ejecución Técnica</Typography>
-                        
-                        <ListItem disablePadding>
-                            <ListItemButton sx={
-                                itemButtonStyle('/tecnico/tareas')} 
-                                onClick={() => navigate('/tecnico/tareas')}>
-                                    <ListItemIcon sx={
-                                        itemIconStyle('/tecnico/tareas')}><Build color="info" />
-                                    </ListItemIcon>
-                                <ListItemText primary="Mi Cola de Trabajo" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} />
-                            </ListItemButton>
-                        </ListItem>
+                        <Typography variant="overline" color="text.disabled" fontWeight="700" sx={{ px: 3, mt: 2, mb: 0.5, display: 'block' }}>Ejecución Técnica</Typography>
+                        <ListItem disablePadding><ListItemButton sx={itemButtonStyle('/tecnico/tareas')} onClick={() => navigate('/tecnico/tareas')}><ListItemIcon sx={itemIconStyle('/tecnico/tareas')}><Build color="info" /></ListItemIcon><ListItemText primary="Mi Cola de Trabajo" primaryTypographyProps={{ fontWeight: '600', variant: 'body2' }} /></ListItemButton></ListItem>
                     </>
                 )}
             </List>
@@ -144,7 +117,6 @@ export default function Sidebar() {
                         <Typography variant="caption" color="text.secondary" fontWeight="600" sx={{ display: 'block' }}>Rol: {userRol}</Typography>
                     </Box>
                 </Box>
-                {/* Función de logout inyectada directamente */}
                 <ListItemButton onClick={logout} sx={{ borderRadius: 2, color: 'error.main', '&:hover': { backgroundColor: 'error.light', color: 'error.dark' }}}>
                     <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}><Logout /></ListItemIcon>
                     <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontWeight: '700', variant: 'body2' }} />

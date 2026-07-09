@@ -21,7 +21,7 @@ import Ordenes from './pages/Ordenes';
 import OrdenFormPage from './pages/OrdenFormPage';
 import OrdenDetalle from './pages/OrdenDetalle';
 import MisTareas from './pages/MisTareas';
-import PanelEjecucionTarea from './pages/PanelEjecucionTarea';
+import PanelEstadoTareas from './pages/PanelEstadoTareas';
 
 function App() {
   return (
@@ -63,7 +63,7 @@ function App() {
             {/* Rutas Operativas */}
             <Route element={<ProtectedRoute rolesPermitidos={['OPERARIO', 'SUPERVISOR']} />}>
                 <Route path="/tecnico/tareas" element={<MisTareas />} />
-                <Route path="/tecnico/tarea/:id" element={<PanelEjecucionTarea />} />
+                <Route path="/tecnico/tarea/:id" element={<PanelEstadoTareas />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/login" replace />} />
