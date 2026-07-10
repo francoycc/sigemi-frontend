@@ -26,8 +26,8 @@ export default function EquipoFormPage() {
         fechaIncorporacion: '',
         frecuencia: '',        
         observaciones: '',     
-        estadoOperativo: 'Operativo',
-        criticidad: 'Media',
+        estadoOperativo: 'OPERATIVO',
+        criticidad: 'MEDIA',
         ubicacionTecnicaId: '' 
     });
 
@@ -49,8 +49,8 @@ export default function EquipoFormPage() {
                         fechaIncorporacion: data.fechaIncorporacion ? data.fechaIncorporacion.split('T')[0] : '',
                         frecuencia: data.frecuencia || '',
                         observaciones: data.observaciones || '',
-                        estadoOperativo: data.estadoOperativo || 'Operativo',
-                        criticidad: data.criticidad || 'Media',
+                        estadoOperativo: data.estadoOperativo || 'OPERATIVO',
+                        criticidad: data.criticidad || 'MEDIA',
                         ubicacionTecnicaId: data.ubicacionTecnica?.idUbicacion || ''
                     });
                 }
@@ -236,9 +236,9 @@ export default function EquipoFormPage() {
                                 onChange={handleChange} required
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                             >
-                                <MenuItem value="Operativo">Operativo</MenuItem>
-                                <MenuItem value="EnReparacion">En Reparación</MenuItem>
-                                <MenuItem value="FueraDeServicio">Fuera de Servicio</MenuItem>
+                                <MenuItem value="OPERATIVO">Operativo</MenuItem>
+                                <MenuItem value="EN_REPARACION">En Reparación</MenuItem>
+                                <MenuItem value="FUERA_DE_SERVICIO">Fuera de Servicio</MenuItem>
                             </TextField>
                         </Grid>
 
@@ -248,9 +248,9 @@ export default function EquipoFormPage() {
                                 onChange={handleChange} required
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                             >
-                                <MenuItem value="Baja">Baja</MenuItem>
-                                <MenuItem value="Media">Media</MenuItem>
-                                <MenuItem value="Alta">Alta</MenuItem>
+                                <MenuItem value="BAJA">Baja</MenuItem>
+                                <MenuItem value="MEDIA">Media</MenuItem>
+                                <MenuItem value="ALTA">Alta</MenuItem>
                             </TextField>
                         </Grid>
 

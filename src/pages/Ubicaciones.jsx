@@ -113,7 +113,7 @@ export default function Ubicaciones() {
                                     <TableCell sx={{ fontWeight: 500 }}>{row.nombre}</TableCell>
                                     <TableCell>
                                         <Chip label={row.estado} size="small" 
-                                              color={row.estado === 'Operativo' ? 'success' : 'error'} 
+                                              color={row.estado === 'OPERATIVO' ? 'success' : 'error'} 
                                               variant="outlined" sx={{ fontWeight: 600 }} />
                                     </TableCell>
                                     <TableCell align="right">

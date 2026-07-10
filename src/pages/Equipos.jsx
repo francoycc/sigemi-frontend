@@ -113,7 +113,7 @@ export default function Equipos() {
                                         <Chip 
                                             label={eq.estadoOperativo} 
                                             size="small" 
-                                            color={eq.estadoOperativo === 'Operativo' ? 'success' : eq.estadoOperativo === 'EnReparacion' ? 'warning' : 'error'} 
+                                            color={eq.estadoOperativo === 'OPERATIVO' ? 'success' : eq.estadoOperativo === 'EN_REPARACION' ? 'warning' : 'error'} 
                                             variant="outlined" 
                                             sx={{ fontWeight: 600 }} 
                                         />

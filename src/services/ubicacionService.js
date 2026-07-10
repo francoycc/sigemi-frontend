@@ -1,89 +1,79 @@
-import axios from 'axios';
+import api from './api';
 
-// URL del Backend
-const API_URL = 'http://localhost:8080/api/ubicaciones';
+const ENDPOINT = '/ubicaciones';
 
-
-const getAll = async () => {
-    console.log(`[UbicacionService] Solicitando TODAS las ubicaciones`);
+const getAll = async (filters = {}) => {
     try {
-        const response = await axios.get(API_URL);
-        return response.data;
+        const response = await api.get(ENDPOINT, { params: filters });
+        return response.data; 
     } catch (error) {
-        console.error("[UbicacionService] Error obteniendo todas las ubicaciones:", error);
-        throw error;
-    }
-};
-
-const getByParentId = async (parentId) => {
-   console.log(`[UbicacionService] Solicitando hijos para ID Padre: ${parentId || 'RAIZ'}`);
-
-    try {
-        const params = parentId ? { padreId: parentId } : {}; 
-        
-        const response = await axios.get(`${API_URL}/hijos`, { params });
-        
-        console.log("[UbicacionService] Respuesta del Backend:", response.data);
-        return response.data;
-    } catch (error) {
-        console.error("[UbicacionService] Error obteniendo jerarquía:", error.response ? error.response.status : error.message);
+        console.error("[UbicacionService] Error listando todas las ubicaciones:", error);
         throw error;
     }
 };
 
 const getById = async (id) => {
-    console.log(`[UbicacionService] Solicitando detalle para ID: ${id}`);
     try {
-        const response = await axios.get(`${API_URL}/${id}`);
-        console.log("[UbicacionService] Detalle recibido:", response.data);
+        const response = await api.get(`${ENDPOINT}/${id}`);
         return response.data;
     } catch (error) {
-        console.error("[UbicacionService] Error obteniendo detalle:", error);
+        console.error(`[UbicacionService] Error obteniendo ubicación técnica ${id}:`, error);
         throw error;
     }
 };
 
 const create = async (ubicacionData) => {
-    console.log(`[UbicacionService] Alta ubicacion: `, ubicacionData);
     try {
-        const response = await axios.post(API_URL, ubicacionData);
+        const response = await api.post(ENDPOINT, ubicacionData);
         return response.data;
     } catch (error) {
-        console.error("[UbicacionService] Error creando ubicación:", error);
+        console.error("[UbicacionService] Error creando ubicación técnica:", error);
         throw error;
     }
 };
 
 const update = async (id, ubicacionData) => {
-    console.log(`[UbicacionService] Modificando ubicacion ID ${id}: `, ubicacionData);
-    try{
-        const response = await axios.put(`${API_URL}/${id}`, ubicacionData);
+    try {
+        const response = await api.put(`${ENDPOINT}/${id}`, ubicacionData);
         return response.data;
     } catch (error) {
-        console.error(`[UbicacionService] Error modificando ubicación ID ${id}:`, error);
+        console.error(`[UbicacionService] Error actualizando ubicación técnica ${id}:`, error);
         throw error;
     }
 };
 
 const remove = async (id) => {
-    console.log(`[UbicacionService] Baja de ubicacion con ID ${id}`);
-    try{
-        const response = await axios.delete(`${API_URL}/${id}`);
+    try {
+        const response = await api.delete(`${ENDPOINT}/${id}`);
         return response.data;
-    } catch(error){
-        console.error("[UbicacionService] Error eliminando ubicación:", error);
+    } catch (error) {
+        console.error(`[UbicacionService] Error eliminando ubicación técnica ${id}:`, error);
         throw error;
     }
 };
 
+/**
+ * Carga los nodos hijos de la jerarquía de planta de forma dinámica.
+ * Se mapea directamente con @GetMapping("/hijos") y el @RequestParam padreId
+ */
+const getByParentId = async (padreId) => {
+    try {
+        const params = padreId ? { padreId: padreId } : {}; 
+        const response = await api.get(`${ENDPOINT}/hijos`, { params });
+        return response.data;
+    } catch (error) {
+        console.error(`[UbicacionService] Error obteniendo jerarquía para padreId ${padreId || 'RAIZ'}:`, error);
+        throw error;
+    }
+};
 
 const ubicacionService = {
     getAll,
-    getByParentId,
     getById,
     create,
     update,
-    remove
+    remove,
+    getByParentId
 };
 
 export default ubicacionService;

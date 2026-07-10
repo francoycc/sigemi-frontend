@@ -39,19 +39,19 @@ export default function MisTareas() {
 
     const getEstadoColor = (estado) => {
         switch (estado) {
-            case 'Pendiente': return 'warning';
-            case 'EnProgreso': return 'info';
-            case 'Completada': return 'success';
-            case 'Cancelada': return 'error';
+            case 'PENDIENTE': return 'warning';
+            case 'EN_PROGRESO': return 'info';
+            case 'COMPLETADA': return 'success';
+            case 'CANCELADA': return 'error';
             default: return 'default';
         }
     };
 
     const getEstadoIcon = (estado) => {
         switch (estado) {
-            case 'Pendiente': return <QueryBuilder fontSize="small" />;
-            case 'EnProgreso': return <PlayArrow fontSize="small" />;
-            case 'Completada': return <CheckCircle fontSize="small" />;
+            case 'PENDIENTE': return <QueryBuilder fontSize="small" />;
+            case 'EN_PROGRESO': return <PlayArrow fontSize="small" />;
+            case 'COMPLETADA': return <CheckCircle fontSize="small" />;
             default: return null;
         }
     };
@@ -92,9 +92,10 @@ export default function MisTareas() {
                     label="Filtrar Estado"
                 >
                     <MenuItem value="Todos">Todos</MenuItem>
-                    <MenuItem value="Pendiente">Pendientes</MenuItem>
-                    <MenuItem value="EnProgreso">En Progreso</MenuItem>
-                    <MenuItem value="Completada">Completadas</MenuItem>
+                    <MenuItem value="PENDIENTE">Pendientes</MenuItem>
+                    <MenuItem value="EN_PROGRESO">En Progreso</MenuItem>
+                    <MenuItem value="COMPLETADA">Completadas</MenuItem>
+                    <MenuItem value="PAUSADA">Pausadas</MenuItem>
                 </TextField>
             </Box>
 
@@ -146,7 +147,7 @@ export default function MisTareas() {
                                         onClick={() => navigate(`/tecnico/tarea/${tarea.idTarea}`)}
                                         sx={{ borderRadius: 2, fontWeight: 'bold' }}
                                     >
-                                        {tarea.estado === 'EnProgreso' ? 'Continuar Ejecución' : 'Iniciar / Ver Detalle'}
+                                        {tarea.estado === 'EN_PROGRESO' ? 'Continuar Ejecución' : 'Iniciar / Ver Detalle'}
                                     </Button>
                                 </CardActions>
                             </Card>

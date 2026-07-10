@@ -83,28 +83,29 @@ export default function Ordenes() {
 
     const getEstadoColor = (estado) => {
         switch (estado) {
-            case 'Pendiente': return 'warning';
-            case 'EnProgreso': return 'info';
-            case 'Completada': return 'success';
-            case 'Cancelada': return 'error';
+            case 'PENDIENTE': return 'warning';
+            case 'EN_PROGRESO': return 'info';
+            case 'COMPLETADA': return 'success';
+            case 'CANCELADA': return 'error';
+            case 'PAUSADA': return 'warning';
             default: return 'default';
         }
     };
 
     const getPrioridadColor = (prioridad) => {
         switch (prioridad) {
-            case 'Alta': return 'error';
-            case 'Media': return 'warning';
-            case 'Baja': return 'success';
+            case 'ALTA': return 'error';
+            case 'MEDIA': return 'warning';
+            case 'BAJA': return 'success';
             default: return 'default';
         }
     };
 
     const getTipoIcon = (tipo) => {
         switch (tipo) {
-            case 'Preventivo': return <CalendarMonth fontSize="small" color="info" />;
-            case 'Correctivo': return <Build fontSize="small" color="error" />;
-            case 'Predictivo': return <QueryStats fontSize="small" color="secondary" />;
+            case 'PREVENTIVO': return <CalendarMonth fontSize="small" color="info" />;
+            case 'CORRECTIVO': return <Build fontSize="small" color="error" />;
+            case 'PREDICTIVO': return <QueryStats fontSize="small" color="secondary" />;
             default: return <Settings fontSize="small" color="action" />;
         }
     };
@@ -159,9 +160,9 @@ export default function Ordenes() {
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Tipo</Typography>
                         <TextField fullWidth select value={tipoFiltro} onChange={(e) => setTipoFiltro(e.target.value)}>
                             <MenuItem value=""><em>Todos</em></MenuItem>
-                            <MenuItem value="Preventivo">Preventivo</MenuItem>
-                            <MenuItem value="Correctivo">Correctivo</MenuItem>
-                            <MenuItem value="Predictivo">Predictivo</MenuItem>
+                            <MenuItem value="PREVENTIVO">Preventivo</MenuItem>
+                            <MenuItem value="CORRECTIVO">Correctivo</MenuItem>
+                            <MenuItem value="PREDICTIVO">Predictivo</MenuItem>
                         </TextField>
                     </Grid>
 
@@ -169,9 +170,9 @@ export default function Ordenes() {
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Prioridad</Typography>
                         <TextField fullWidth select value={prioridadFiltro} onChange={(e) => setPrioridadFiltro(e.target.value)}>
                             <MenuItem value=""><em>Todas</em></MenuItem>
-                            <MenuItem value="Alta">Alta</MenuItem>
-                            <MenuItem value="Media">Media</MenuItem>
-                            <MenuItem value="Baja">Baja</MenuItem>
+                            <MenuItem value="ALTA">Alta</MenuItem>
+                            <MenuItem value="MEDIA">Media</MenuItem>
+                            <MenuItem value="BAJA">Baja</MenuItem>
                         </TextField>
                     </Grid>
 
@@ -179,10 +180,10 @@ export default function Ordenes() {
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Estado</Typography>
                         <TextField fullWidth select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value)}>
                             <MenuItem value=""><em>Todos los estados</em></MenuItem>
-                            <MenuItem value="Pendiente">Pendiente</MenuItem>
-                            <MenuItem value="EnProgreso">En Progreso</MenuItem>
-                            <MenuItem value="Completada">Completada</MenuItem>
-                            <MenuItem value="Cancelada">Cancelada</MenuItem>
+                            <MenuItem value="PENDIENTE">Pendiente</MenuItem>
+                            <MenuItem value="EN_PROGRESO">En Progreso</MenuItem>
+                            <MenuItem value="COMPLETADA">Completada</MenuItem>
+                            <MenuItem value="CANCELADA">Cancelada</MenuItem>
                         </TextField>
                     </Grid>
                 </Grid>

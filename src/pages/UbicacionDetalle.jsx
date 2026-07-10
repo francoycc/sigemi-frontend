@@ -173,7 +173,7 @@ export default function UbicacionDetalle() {
                                                 <TableCell>
                                                     <Chip 
                                                         label={eq.estadoOperativo} size="small" variant="outlined"
-                                                        color={eq.estadoOperativo === 'Operativo' ? 'success' : eq.estadoOperativo === 'EnReparacion' ? 'warning' : 'error'} 
+                                                        color={eq.estadoOperativo === 'OPEARTIVO' ? 'success' : eq.estadoOperativo === 'EnReparacion' ? 'warning' : 'error'} 
                                                     />
                                                 </TableCell>
                                                 <TableCell align="right">

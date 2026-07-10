@@ -3,11 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
     Box, Typography, Paper, Grid, Button, CircularProgress, 
     Chip, Divider, Breadcrumbs, Link, Avatar, IconButton,
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow // <-- Componentes de Tabla agregados
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow 
 } from '@mui/material';
 import { 
     ArrowBack, Edit, Dashboard as DashboardIcon, ConfirmationNumber,
-    EventNote, PrecisionManufacturing, Person, Add // <-- Icono Add agregado
+    EventNote, PrecisionManufacturing, Person, Add 
 } from '@mui/icons-material';
 import ordenService from '../services/ordenService';
 

@@ -1,44 +1,35 @@
-import axios from 'axios';
+import api from './api';
 
-const API_URL = 'http://localhost:8080/api/equipos';
+const ENDPOINT = '/equipos';
 
-const getAll = async () => {
+/**
+ * Obtiene la lista de equipos soportando paginación, ordenamiento y filtros dinámicos.
+ * @param {Object} filters - Objeto con filtros (Ej: { page: 0, size: 10, nombre: 'Torno', criticidad: 'ALTA' })
+ */
+const getAll = async (filters = {}) => {
     try {
-        console.log(`[EquipoService] Solicitando lista de equipos:`);
-        const response = await axios.get(API_URL);
-        
-        return response.data.content || response.data; 
+        // Pasamos los filtros como query params (?page=0&size=10...) de forma limpia
+        const response = await api.get(ENDPOINT, { params: filters });
+        return response.data; 
     } catch (error) {
-        console.error("[EquipoService] Error obteniendo equipos:", error);
+        console.error("[EquipoService] Error listando equipos:", error);
         throw error;
     }
 };
 
 const getById = async (id) => {
     try {
-        console.log(`[EquipoService] Solicitando detalle del equipo ID: ${id}`);
-        const response = await axios.get(`${API_URL}/${id}`);
+        const response = await api.get(`${ENDPOINT}/${id}`);
         return response.data;
     } catch (error) {
-        console.error(`[EquipoService] Error obteniendo detalle del equipo ${id}:`, error);
-        throw error;
-    }
-};
-
-const getByUbicacion = async (idUbicacion) => {
-    try {
-        const response = await axios.get(`${API_URL}/ubicacion/${idUbicacion}`);
-        return response.data;
-    } catch (error) {
-        console.error(`[EquipoService] Error obteniendo equipos para ubicación ${idUbicacion}:`, error);
+        console.error(`[EquipoService] Error obteniendo equipo ${id}:`, error);
         throw error;
     }
 };
 
 const create = async (equipoData) => {
     try {
-        console.log(`[EquipoService] Creando nuevo equipo:`, equipoData);
-        const response = await axios.post(API_URL, equipoData);
+        const response = await api.post(ENDPOINT, equipoData);
         return response.data;
     } catch (error) {
         console.error("[EquipoService] Error creando equipo:", error);
@@ -48,19 +39,18 @@ const create = async (equipoData) => {
 
 const update = async (id, equipoData) => {
     try {
-        console.log(`[EquipoService] Modificando equipo ID ${id}:`, equipoData);
-        const response = await axios.put(`${API_URL}/${id}`, equipoData);
+        const response = await api.put(`${ENDPOINT}/${id}`, equipoData);
         return response.data;
     } catch (error) {
-        console.error(`[EquipoService] Error modificando equipo ${id}:`, error);
+        console.error(`[EquipoService] Error actualizando equipo ${id}:`, error);
         throw error;
     }
 };
 
 const remove = async (id) => {
     try {
-        console.log(`[EquipoService] Eliminando equipo ID ${id}`);
-        const response = await axios.delete(`${API_URL}/${id}`);
+        // Mapea directamente al @DeleteMapping de tu controlador (desactivar)
+        const response = await api.delete(`${ENDPOINT}/${id}`);
         return response.data;
     } catch (error) {
         console.error(`[EquipoService] Error eliminando equipo ${id}:`, error);
@@ -68,13 +58,27 @@ const remove = async (id) => {
     }
 };
 
+/**
+ * Obtiene los equipos instalados en una ubicación técnica específica.
+ * Mapea directamente con @GetMapping("/ubicacion/{idUbicacion}")
+ */
+const getByUbicacion = async (idUbicacion) => {
+    try {
+        const response = await api.get(`${ENDPOINT}/ubicacion/${idUbicacion}`);
+        return response.data;
+    } catch (error) {
+        console.error(`[EquipoService] Error buscando equipos por ubicación ${idUbicacion}:`, error);
+        throw error;
+    }
+};
+
 const equipoService = {
     getAll,
     getById,
-    getByUbicacion,
     create,
     update,
-    remove
+    remove,
+    getByUbicacion
 };
 
 export default equipoService;

@@ -24,10 +24,10 @@ export default function TareaFormPage() {
     
     // Mapeo seguro y sin valores undefined
     const [formData, setFormData] = useState({
-        tipo: 'Preventivo',
+        tipo: 'PREVENTIVO',
         descripcion: '',
         fechaEjecucion: '',
-        estado: 'Pendiente',
+        estado: 'PENDIENTE',
         tiempoInvertidoHoras: '',
         ordenId: '',   
         tecnicoId: ''  
@@ -157,9 +157,9 @@ export default function TareaFormPage() {
                                 fullWidth select label="Tipo de Mantenimiento" name="tipo" 
                                 value={formData.tipo} onChange={handleChange} required
                             >
-                                <MenuItem value="Preventivo">Preventivo</MenuItem>
-                                <MenuItem value="Correctivo">Correctivo</MenuItem>
-                                <MenuItem value="Predictivo">Predictivo</MenuItem>
+                                <MenuItem value="PREVENTIVO">Preventivo</MenuItem>
+                                <MenuItem value="CORRECTIVO">Correctivo</MenuItem>
+                                <MenuItem value="PREDICTIVO">Predictivo</MenuItem>
                             </TextField>
                         </Grid>
 
@@ -176,10 +176,11 @@ export default function TareaFormPage() {
                                 fullWidth select label="Estado de la Tarea" name="estado" 
                                 value={formData.estado} onChange={handleChange} required
                             >
-                                <MenuItem value="Pendiente">Pendiente</MenuItem>
-                                <MenuItem value="EnProgreso">En Progreso</MenuItem>
-                                <MenuItem value="Completada">Completada</MenuItem>
-                                <MenuItem value="Cancelada">Cancelada</MenuItem>
+                                <MenuItem value="PENDIENTE">Pendiente</MenuItem>
+                                <MenuItem value="EN_PROGRESO">En Progreso</MenuItem>
+                                <MenuItem value="COMPLETADA">Completada</MenuItem>
+                                <MenuItem value="CANCELADA">Cancelada</MenuItem>
+                                <MenuItem value="PAUSADA">Pausada</MenuItem>
                             </TextField>
                         </Grid>
 

@@ -82,23 +82,24 @@ export default function Tareas() {
         }
     };
 
-    const pendingTasksCount = tareas.filter(t => t.estado === 'Pendiente').length;
+    const pendingTasksCount = tareas.filter(t => t.estado === 'PENDIENTE').length;
 
     const getEstadoColor = (estado) => {
         switch (estado) {
-            case 'Pendiente': return 'warning';
-            case 'EnProgreso': return 'info';
-            case 'Completada': return 'success';
-            case 'Cancelada': return 'error';
+            case 'PENDIENTE': return 'warning';
+            case 'EN_PROGRESO': return 'info';
+            case 'COMPLETADA': return 'success';
+            case 'CANCELADA': return 'error';
+            case 'PAUSADA': return 'warning';
             default: return 'default';
         }
     };
 
     const getTipoIcon = (tipo) => {
         switch (tipo) {
-            case 'Preventivo': return <CalendarMonth fontSize="small" color="info" />;
-            case 'Correctivo': return <Build fontSize="small" color="error" />;
-            case 'Predictivo': return <QueryStats fontSize="small" color="secondary" />;
+            case 'PREVENTIVO': return <CalendarMonth fontSize="small" color="info" />;
+            case 'CORRECTIVO': return <Build fontSize="small" color="error" />;
+            case 'PREDICTIVO': return <QueryStats fontSize="small" color="secondary" />;
             default: return <Settings fontSize="small" color="action" />;
         }
     };
@@ -145,10 +146,11 @@ export default function Tareas() {
                         <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ mb: 1, display: 'block', textTransform: 'uppercase' }}>Estado</Typography>
                         <TextField fullWidth select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'grey.50' } }}>
                             <MenuItem value=""><em>Todos los estados</em></MenuItem>
-                            <MenuItem value="Pendiente">Pendiente</MenuItem>
-                            <MenuItem value="EnProgreso">En Progreso</MenuItem>
-                            <MenuItem value="Completada">Completada</MenuItem>
-                            <MenuItem value="Cancelada">Cancelada</MenuItem>
+                            <MenuItem value="PENDIENTE">Pendiente</MenuItem>
+                            <MenuItem value="EN_PROGRESO">En Progreso</MenuItem>
+                            <MenuItem value="COMPLETADA">Completada</MenuItem>
+                            <MenuItem value="CANCELADA">Cancelada</MenuItem>
+                            <MenuItem value="PAUSADA">Pausada</MenuItem>
                         </TextField>
                     </Grid>
 

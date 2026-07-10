@@ -35,7 +35,7 @@ export default function UbicacionFormPage() {
                         codigo: data.codigo || '',
                         nombre: data.nombre || '',
                         tipo: data.tipo || '',
-                        estado: data.estado || 'Operativo',
+                        estado: data.estado || 'OPERATIVO',
                         idPadre: data.idPadre || ''
                     });
                 }
@@ -142,9 +142,9 @@ export default function UbicacionFormPage() {
                                 fullWidth select label="Estado Operativo" name="estado" value={formData.estado}
                                 onChange={handleChange} required
                             >
-                                <MenuItem value="Operativo">Operativo</MenuItem>
-                                <MenuItem value="EnReparacion">En Reparación</MenuItem>
-                                <MenuItem value="FueraDeServicio">Fuera de Servicio</MenuItem>
+                                <MenuItem value="OPERATIVO">Operativo</MenuItem>
+                                <MenuItem value="EN_REPARACION">En Reparación</MenuItem>
+                                <MenuItem value="FUERA_DE_SERVICIO">Fuera de Servicio</MenuItem>
                             </TextField>
                         </Grid>
                     </Grid>

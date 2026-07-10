@@ -1,11 +1,11 @@
-import axios from 'axios';
+import api from './api';
 
-const API_URL = 'http://localhost:8080/api/tareas';
+const ENDPOINT = '/tareas';
 
-const getAll = async () => {
-    console.log("[TareaService] Listando tareas...");
+const getAll = async (filters = {}) => {
     try {
-        const response = await axios.get(API_URL);
+        // Soporte nativo para filtros dinámicos (Ej: por estado o criticidad)
+        const response = await api.get(ENDPOINT, { params: filters });
         return response.data;
     } catch (error) {
         console.error("[TareaService] Error listando tareas:", error);
@@ -14,9 +14,8 @@ const getAll = async () => {
 };
 
 const getById = async (id) => {
-    console.log(`[TareaService] Obteniendo tarea ${id}...`);
     try {
-        const response = await axios.get(`${API_URL}/${id}`);
+        const response = await api.get(`${ENDPOINT}/${id}`);
         return response.data;
     } catch (error) {
         console.error(`[TareaService] Error obteniendo tarea ${id}:`, error);
@@ -25,9 +24,8 @@ const getById = async (id) => {
 };
 
 const create = async (tareaData) => {
-    console.log("[TareaService] Creando tarea...", tareaData);
     try {
-        const response = await axios.post(API_URL, tareaData);
+        const response = await api.post(ENDPOINT, tareaData);
         return response.data;
     } catch (error) {
         console.error("[TareaService] Error creando tarea:", error);
@@ -36,9 +34,8 @@ const create = async (tareaData) => {
 };
 
 const update = async (id, tareaData) => {
-    console.log(`[TareaService] Actualizando tarea ${id}...`, tareaData);
     try {
-        const response = await axios.put(`${API_URL}/${id}`, tareaData);
+        const response = await api.put(`${ENDPOINT}/${id}`, tareaData);
         return response.data;
     } catch (error) {
         console.error(`[TareaService] Error actualizando tarea ${id}:`, error);
@@ -46,22 +43,56 @@ const update = async (id, tareaData) => {
     }
 };
 
-const remove = async (id) => {
-    console.log(`[TareaService] Eliminando tarea ${id}...`);
+/**
+ * Obtiene las subtareas asociadas a una Orden de Trabajo específica.
+ * Mapea directo con @GetMapping("/orden/{idOrden}")
+ */
+const getByOrden = async (idOrden) => {
     try {
-        const response = await axios.delete(`${API_URL}/${id}`);
+        const response = await api.get(`${ENDPOINT}/orden/${idOrden}`);
         return response.data;
     } catch (error) {
-        console.error(`[TareaService] Error eliminando tarea ${id}:`, error);
+        console.error(`[TareaService] Error listando tareas de la orden ${idOrden}:`, error);
         throw error;
     }
 };
 
-const tareaService = { 
-    getAll, 
-    getById, 
-    create, 
-    update, 
-    remove 
+/**
+ * Carga la cola operativa del operario logueado.
+ * Mapea directo con @GetMapping("/tecnico/{idTecnico}")
+ */
+const getByTecnico = async (idTecnico) => {
+    try {
+        const response = await api.get(`${ENDPOINT}/tecnico/${idTecnico}`);
+        return response.data;
+    } catch (error) {
+        console.error(`[TareaService] Error listando tareas del técnico ${idTecnico}:`, error);
+        throw error;
+    }
 };
+
+/**
+ * Cambia el estado de una tarea a pausa sin destruir la entidad.
+ * Mapea directo con @PatchMapping("/{id}/pausar")
+ */
+const pause = async (id) => {
+    try {
+        const response = await api.patch(`${ENDPOINT}/${id}/pausar`);
+        return response.data;
+    } catch (error) {
+        console.error(`[TareaService] Error pausando tarea ${id}:`, error);
+        throw error;
+    }
+};
+
+const tareaService = {
+    getAll,
+    getById,
+    create,
+    update,
+    getByOrden,
+    getByTecnico,
+    pause
+};
+
 export default tareaService;

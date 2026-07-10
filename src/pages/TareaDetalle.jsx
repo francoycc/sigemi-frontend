@@ -34,10 +34,11 @@ export default function TareaDetalle() {
 
     const getEstadoColor = (estado) => {
         switch (estado) {
-            case 'Pendiente': return 'warning';
-            case 'EnProgreso': return 'info';
-            case 'Completada': return 'success';
-            case 'Cancelada': return 'error';
+            case 'PENDIENTE': return 'warning';
+            case 'EN_PROGRESO': return 'info';
+            case 'COMPLETADA': return 'success';
+            case 'CANCELADA': return 'error';
+            case 'PAUSADA': return 'warning';
             default: return 'default';
         }
     };

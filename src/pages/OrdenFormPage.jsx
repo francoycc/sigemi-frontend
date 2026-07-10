@@ -23,9 +23,9 @@ export default function OrdenFormPage() {
     
     // Estado del formulario mapeado al OrdenDTO
     const [formData, setFormData] = useState({
-        tipo: 'Preventivo',
-        prioridad: 'Media',
-        estado: 'Pendiente',
+        tipo: 'PREVENTIVO',
+        prioridad: 'MEDIA',
+        estado: 'PENDIENTE',
         descripcion: '',
         fechaCreacion: new Date().toISOString().split('T')[0], // Por defecto hoy
         fechaInicio: '',
@@ -39,8 +39,8 @@ export default function OrdenFormPage() {
     const [nuevaTarea, setNuevaTarea] = useState({
         descripcion: '',
         tecnicoId: '',
-        tipo: 'Preventivo',
-        estado: 'Pendiente',
+        tipo: 'PREVENTIVO',
+        estado: 'PENDIENTE',
         fechaEjecucion: new Date().toISOString().split('T')[0]
     });
 
@@ -223,24 +223,24 @@ export default function OrdenFormPage() {
                     <Grid container spacing={3} sx={{ mb: 4 }}>
                         <Grid item xs={12} sm={4}>
                             <TextField fullWidth select label="Tipo de Mantenimiento" name="tipo" value={formData.tipo} onChange={handleChange} required>
-                                <MenuItem value="Preventivo">Preventivo</MenuItem>
-                                <MenuItem value="Correctivo">Correctivo</MenuItem>
-                                <MenuItem value="Predictivo">Predictivo</MenuItem>
+                                <MenuItem value="PREVENTIVO">Preventivo</MenuItem>
+                                <MenuItem value="CORRECTIVO">Correctivo</MenuItem>
+                                <MenuItem value="PREDICTIVO">Predictivo</MenuItem>
                             </TextField>
                         </Grid>
                         <Grid item xs={12} sm={4}>
                             <TextField fullWidth select label="Prioridad" name="prioridad" value={formData.prioridad} onChange={handleChange} required>
-                                <MenuItem value="Alta">Alta</MenuItem>
-                                <MenuItem value="Media">Media</MenuItem>
-                                <MenuItem value="Baja">Baja</MenuItem>
+                                <MenuItem value="ALTA">Alta</MenuItem>
+                                <MenuItem value="MEDIA">Media</MenuItem>
+                                <MenuItem value="BAJA">Baja</MenuItem>
                             </TextField>
                         </Grid>
                         <Grid item xs={12} sm={4}>
                             <TextField fullWidth select label="Estado de la Orden" name="estado" value={formData.estado} onChange={handleChange} required>
-                                <MenuItem value="Pendiente">Pendiente</MenuItem>
-                                <MenuItem value="EnProgreso">En Progreso</MenuItem>
-                                <MenuItem value="Completada">Completada</MenuItem>
-                                <MenuItem value="Cancelada">Cancelada</MenuItem>
+                                <MenuItem value="PENDIENTE">Pendiente</MenuItem>
+                                <MenuItem value="EN_PROGRESO">En Progreso</MenuItem>
+                                <MenuItem value="COMPLETADA">Completada</MenuItem>
+                                <MenuItem value="CANCELADA">Cancelada</MenuItem>
                             </TextField>
                         </Grid>
                         <Grid item xs={12}>
@@ -327,8 +327,8 @@ export default function OrdenFormPage() {
                                     value={nuevaTarea.tipo} 
                                     onChange={(e) => setNuevaTarea({...nuevaTarea, tipo: e.target.value})} 
                                 >
-                                    <MenuItem value="Preventivo">Prev.</MenuItem>
-                                    <MenuItem value="Correctivo">Corr.</MenuItem>
+                                    <MenuItem value="PREVENTIVO">Prev.</MenuItem>
+                                    <MenuItem value="CORRECTIVO">Corr.</MenuItem>
                                 </TextField>
                             </Grid>
                             <Grid item xs={12} md={2}>

@@ -34,14 +34,14 @@ export default function EquipoDetalle() {
 
     // Helpers para estilos de Chips
     const getColorEstado = (estado) => {
-        if (estado === 'Operativo') return 'success';
-        if (estado === 'EnReparacion') return 'warning';
+        if (estado === 'OPERATIVO') return 'success';
+        if (estado === 'EN_REPARACION') return 'warning';
         return 'error';
     };
 
     const getColorCriticidad = (criticidad) => {
-        if (criticidad === 'Alta') return 'error';
-        if (criticidad === 'Media') return 'warning';
+        if (criticidad === 'ALTA') return 'error';
+        if (criticidad === 'MEDIA') return 'warning';
         return 'info';
     };
 
